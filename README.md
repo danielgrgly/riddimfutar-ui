@@ -1,16 +1,21 @@
-# riddimfutar
+# riddimfutár-ui
 
-A new Flutter project.
+This repo is for the RIDDIMFUTÁR app's Flutter frontend. The Serverless Node.js-based backend can be found in [this repository](https://github.com/danielgrgly/riddimfutar-api).
 
-## Getting Started
+## Important legal stuff
 
-This project is a starting point for a Flutter application.
+**This project is not afflitiated with the Budapesti Közlekedési Központ (BKK) and the Forgalomirányítási és Utastájékoztatási Rendszer (FUTÁR) in any way. This project is solely for educational and experimental purposes.**
 
-A few resources to get you started if this is your first Flutter project:
+## What will this app do?
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+This Flutter app will provide the users with **location-based riddim music**. The base idea is the following:
+- you get on board on an overground public transport vehicle like a bus, tram or trolley.
+- you select the current stop, your ride (e.g. tram number 4 to "Széll Kálmán tér")
+- a music beat will start
+- as you get closer to the next stop, the music gets faster and faster
+- when you arrive at the stop, the app announced the stop and a very lit beat drops
+- then the app announces the next stop and another music will start
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Development
+
+Clone the repo with a `pub get install`, add your own environment variables (backend deployment URL, S3 bucket URL, etc.), and run `flutter run`.
