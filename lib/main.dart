@@ -17,9 +17,9 @@ class Riddimfutar extends StatelessWidget {
       title: "Budipest",
       theme: ThemeData(
         primarySwatch: black,
-        textTheme: Theme.of(context).textTheme.apply(
-              fontFamily: 'OpenSans',
-            ),
+        textTheme: Theme.of(context)
+            .textTheme
+            .apply(fontFamily: 'OpenSans', bodyColor: Colors.white),
       ),
       initialRoute: '/',
       routes: {
