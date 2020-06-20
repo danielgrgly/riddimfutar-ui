@@ -31,57 +31,53 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(34.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              Center(
-                child: SizedBox(
-                  child: logo,
-                  height: 120,
-                  width: 320,
-                ),
+      body: ListView(
+        padding: EdgeInsets.all(34.0),
+        shrinkWrap: true,
+        children: <Widget>[
+          Center(
+            child: SafeArea(
+              bottom: false,
+              child: SizedBox(
+                child: logo,
+                height: 120,
+                width: 320,
               ),
-              FutureBuilder(
-                future: fetchMeta(),
-                builder: (context, metadata) {
-                  if (metadata.data != null) {
-                    return StreamBuilder(
-                      stream: _location.onLocationChanged,
-                      builder: (context, location) {
-                        if (location.hasData) {
-                          if (metadata.data["lowerLeftLatitude"] <=
-                                  location.data.latitude &&
-                              metadata.data["lowerLeftLongitude"] <=
-                                  location.data.longitude &&
-                              metadata.data["upperRightLatitude"] >=
-                                  location.data.latitude &&
-                              metadata.data["upperRightLongitude"] >=
-                                  location.data.longitude) {
-                            return VehicleList(location: location.data);
-                          } else {
-                            return Expanded(
-                              child: Error(),
-                            );
-                          }
-                        } else {
-                          _location.requestPermission();
-                          _location.getLocation();
-                          return Loading();
-                        }
-                      },
-                    );
-                  } else {
-                    return Loading();
-                  }
-                },
-              ),
-            ],
+            ),
           ),
-        ),
+          FutureBuilder(
+            future: fetchMeta(),
+            builder: (context, metadata) {
+              if (metadata.data != null) {
+                return StreamBuilder(
+                  stream: _location.onLocationChanged,
+                  builder: (context, location) {
+                    if (location.hasData) {
+                      if (metadata.data["lowerLeftLatitude"] <=
+                              location.data.latitude &&
+                          metadata.data["lowerLeftLongitude"] <=
+                              location.data.longitude &&
+                          metadata.data["upperRightLatitude"] >=
+                              location.data.latitude &&
+                          metadata.data["upperRightLongitude"] >=
+                              location.data.longitude) {
+                        return VehicleList(location: location.data);
+                      } else {
+                        return Error();
+                      }
+                    } else {
+                      _location.requestPermission();
+                      _location.getLocation();
+                      return Loading();
+                    }
+                  },
+                );
+              } else {
+                return Loading();
+              }
+            },
+          ),
+        ],
       ),
     );
   }

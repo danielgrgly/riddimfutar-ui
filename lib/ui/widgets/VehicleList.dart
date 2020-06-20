@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../../core/Vehicle.dart';
+import './VehicleCard.dart';
 import "./Loading.dart";
 
 class VehicleList extends StatelessWidget {
@@ -11,7 +13,8 @@ class VehicleList extends StatelessWidget {
 
   Future<dynamic> fetchVehicles(double lat, double lon) async {
     final response = await http.get(
-        'https://riddimfutar.ey.r.appspot.com/api/v1/vehicles?lat=$lat&lon=$lon');
+      'https://riddimfutar.ey.r.appspot.com/api/v1/vehicles?lat=$lat&lon=$lon',
+    );
 
     if (response.statusCode == 200) {
       return json.decode(response.body);
@@ -25,8 +28,10 @@ class VehicleList extends StatelessWidget {
     return FutureBuilder(
       future: fetchVehicles(location.latitude, location.longitude),
       builder: (context, vehicles) {
-        print(vehicles.data);
         if (vehicles.data != null) {
+          List<Vehicle> vehicleList =
+              vehicles.data.map<Vehicle>((i) => Vehicle.fromJson(i)).toList();
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -38,6 +43,10 @@ class VehicleList extends StatelessWidget {
                 "A közeledben levő aktív BKK járműveket listázzuk.",
                 style: TextStyle(fontSize: 16),
               ),
+              SizedBox(
+                height: 14,
+              ),
+              ...vehicleList.map((Vehicle vehicle) => VehicleCard(vehicle))
             ],
           );
         } else {
