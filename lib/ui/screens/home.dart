@@ -63,7 +63,10 @@ class Home extends StatelessWidget {
                               location.data.longitude) {
                         return VehicleList(location: location.data);
                       } else {
-                        return Error();
+                        return Container(
+                          height: MediaQuery.of(context).size.height * 0.6,
+                          child: Error(),
+                        );
                       }
                     } else {
                       _location.requestPermission();
