@@ -16,7 +16,22 @@ dependencies:
 
   location: ^3.0.0
 
+dev_dependencies:
+  flutter_launcher_icons: "^0.7.5"
+
 flutter:
+  assets:
+    - assets/
+    - assets/svg/bkk_bus.svg
+    - assets/svg/bkk_night.svg
+    - assets/svg/bkk_tram.svg
+    - assets/svg/bkk_trolley.svg
+
+    - assets/svg/budapest.svg
+    - assets/svg/logo.svg
+    - assets/svg/stop.svg
+    - assets/svg/terminus.svg
+
   fonts:
     - family: Muli
       fonts:
