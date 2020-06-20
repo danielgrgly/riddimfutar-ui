@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../core/Vehicle.dart';
+import '../../core/models/Vehicle.dart';
 
 class VehicleCard extends StatelessWidget {
   const VehicleCard(this.vehicle);

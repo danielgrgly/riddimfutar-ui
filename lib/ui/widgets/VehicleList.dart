@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import '../../core/Vehicle.dart';
+import '../../core/models/Vehicle.dart';
 import './VehicleCard.dart';
 import "./Loading.dart";
 
