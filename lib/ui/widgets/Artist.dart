@@ -21,18 +21,32 @@ class Artist extends StatelessWidget {
               color: Color.fromRGBO(70, 71, 112, 1),
             ),
           ),
-          Column(
-            children: <Widget>[
-              Text(
-                "Jelenlegi musorvezeto:",
-                style: TextStyle(
-                  fontFamily: "RoadRage",
-                  fontSize: 20,
-                  color: color,
+          Padding(
+            padding: const EdgeInsets.only(
+              top: 2.5,
+              left: 60.0,
+              right: 20.0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  "Jelenlegi musorvezeto:",
+                  style: TextStyle(
+                    fontFamily: "RoadRage",
+                    fontSize: 20,
+                    color: color,
+                  ),
                 ),
-              ),
-              Text(name),
-            ],
+                Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

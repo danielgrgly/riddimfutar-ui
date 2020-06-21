@@ -32,12 +32,6 @@ class _VisualizerState extends State<Visualizer> with TickerProviderStateMixin {
     super.initState();
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
   void kickoffRotate() async {
     _controller.forward(from: 0);
 
