@@ -10,8 +10,10 @@ import '../widgets/Loading.dart';
 // import '../widgets/VehicleList.dart';
 
 final String assetName = 'assets/svg/logo.svg';
-final Widget logo =
-    SvgPicture.asset(assetName, semanticsLabel: 'RIDDIMFUTAR logo');
+final Widget logo = SvgPicture.asset(
+  assetName,
+  semanticsLabel: 'RIDDIMFUTAR logo',
+);
 
 final Location _location = new Location();
 
