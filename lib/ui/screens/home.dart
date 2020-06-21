@@ -27,6 +27,29 @@ class Home extends StatelessWidget {
     }
   }
 
+  Future<dynamic> getLocation() async {
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+
+    _serviceEnabled = await _location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await _location.requestService();
+      if (!_serviceEnabled) {
+        print("does not have service enabled");
+      }
+    }
+
+    _permissionGranted = await _location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await _location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        print("denied permission");
+      }
+    }
+
+    return await _location.getLocation();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,8 +92,7 @@ class Home extends StatelessWidget {
                         );
                       }
                     } else {
-                      _location.requestPermission();
-                      _location.getLocation();
+                      getLocation();
                       return Loading();
                     }
                   },

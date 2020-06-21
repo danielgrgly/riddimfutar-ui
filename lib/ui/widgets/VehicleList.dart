@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:riddimfutar/ui/screens/futar.dart';
 
 import '../../core/models/Vehicle.dart';
 import './VehicleCard.dart';
@@ -11,6 +12,14 @@ class VehicleList extends StatelessWidget {
 
   final dynamic location;
 
+  void selectVehicle(BuildContext context, Vehicle vehicle) {
+    Navigator.pushNamed(
+      context,
+      "/futar",
+      arguments: FutarArguments(vehicle.tripId),
+    );
+  }
+
   Future<dynamic> fetchVehicles(double lat, double lon) async {
     final response = await http.get(
       'https://riddimfutar.ey.r.appspot.com/api/v1/vehicles?lat=$lat&lon=$lon',
@@ -19,7 +28,7 @@ class VehicleList extends StatelessWidget {
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
-      throw Exception('Failed to load metadata');
+      throw Exception('Failed to load vehicles');
     }
   }
 
@@ -46,7 +55,15 @@ class VehicleList extends StatelessWidget {
               SizedBox(
                 height: 14,
               ),
-              ...vehicleList.map((Vehicle vehicle) => VehicleCard(vehicle))
+              ...vehicleList.map(
+                (Vehicle vehicle) => GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    selectVehicle(context, vehicle);
+                  },
+                  child: VehicleCard(vehicle),
+                ),
+              )
             ],
           );
         } else {

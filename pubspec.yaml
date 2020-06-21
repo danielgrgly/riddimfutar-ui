@@ -18,6 +18,8 @@ dependencies:
 
   http: any
 
+  flutter_statusbarcolor: any
+
 dev_dependencies:
   flutter_launcher_icons: "^0.7.5"
 
@@ -30,6 +32,7 @@ flutter:
     - assets/svg/bkk_trolley.svg
 
     - assets/svg/budapest.svg
+    - assets/svg/dot.svg
     - assets/svg/logo.svg
     - assets/svg/stop.svg
     - assets/svg/terminus.svg
