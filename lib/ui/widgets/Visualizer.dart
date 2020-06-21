@@ -51,18 +51,20 @@ class _VisualizerState extends State<Visualizer> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.5,
-      child: AnimatedContainer(
-        duration: Duration(milliseconds: 10),
-        curve: Curves.linear,
-        width: _width,
-        height: _height,
-        child: RotationTransition(
-          turns: Tween(begin: 0.0, end: 1.0).animate(_controller),
-          child: SvgPicture.asset(
-            iconPath(widget.trip.type),
-            semanticsLabel: 'visualizer',
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 60.0),
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: 10),
+          curve: Curves.linear,
+          width: _width,
+          height: _height,
+          child: RotationTransition(
+            turns: Tween(begin: 0.0, end: 1.0).animate(_controller),
+            child: SvgPicture.asset(
+              iconPath(widget.trip.type),
+              semanticsLabel: 'visualizer',
+            ),
           ),
         ),
       ),

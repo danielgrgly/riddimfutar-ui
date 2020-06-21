@@ -7,6 +7,7 @@ import "../../core/models/TripDetails.dart";
 import "../widgets/Loading.dart";
 import "../widgets/FutarDisplay.dart";
 import "../widgets/Visualizer.dart";
+import "../widgets/Artist.dart";
 
 final String assetName = 'assets/svg/logo.svg';
 final Widget logo = SvgPicture.asset(
@@ -44,33 +45,44 @@ class Futar extends StatelessWidget {
         builder: (context, data) {
           if (data.data != null) {
             TripDetails trip = TripDetails.fromJson(data.data);
-            return Column(
+            return Stack(
               children: <Widget>[
-                FutarDisplay(
-                  trip: trip,
-                ),
-                Visualizer(
-                  trip: trip,
-                ),
-                Spacer(),
-                Padding(
-                  padding: EdgeInsets.only(
-                    bottom:
-                        MediaQuery.of(context).systemGestureInsets.bottom + 30,
+                Center(
+                  child: Visualizer(
+                    trip: trip,
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text("ride powered by"),
-                      SizedBox(
-                        height: 40,
-                        width: 180,
-                        child: logo,
+                ),
+                Column(
+                  children: <Widget>[
+                    FutarDisplay(
+                      trip: trip,
+                    ),
+                    Spacer(),
+                    Artist(color: trip.color, name: "Lil Tango"),
+                    SizedBox(
+                      height: 24,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        bottom:
+                            MediaQuery.of(context).systemGestureInsets.bottom +
+                                30,
                       ),
-                    ],
-                  ),
-                )
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text("ride powered by"),
+                          SizedBox(
+                            height: 40,
+                            width: 200,
+                            child: logo,
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ],
             );
           } else {

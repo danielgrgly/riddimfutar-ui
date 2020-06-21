@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 final String assetName = 'assets/svg/budapest.svg';
-final Widget budapestSvg =
-    SvgPicture.asset(assetName, semanticsLabel: 'Budapest illusztráció');
+final Widget budapestSvg = SvgPicture.asset(
+  assetName,
+  semanticsLabel: 'Budapest illusztráció',
+);
 
 class Error extends StatelessWidget {
   @override
