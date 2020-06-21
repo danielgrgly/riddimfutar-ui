@@ -27,21 +27,27 @@ class _VisualizerState extends State<Visualizer> with TickerProviderStateMixin {
       vsync: this,
     );
 
-    kickoffRotate();
+    // kickoffRotate();
 
     super.initState();
   }
 
-  void kickoffRotate() async {
-    _controller.forward(from: 0);
-
-    while (true) {
-      // You have to provide a condition to know when to stop
-      await new Future.delayed(const Duration(seconds: 4), () {
-        _controller.forward(from: 0);
-      });
-    }
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
+
+  // void kickoffRotate() async {
+  //   _controller.forward(from: 0);
+
+  //   while (true) {
+  //     // You have to provide a condition to know when to stop
+  //     await new Future.delayed(const Duration(seconds: 4), () {
+  //       _controller.forward(from: 0);
+  //     });
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
