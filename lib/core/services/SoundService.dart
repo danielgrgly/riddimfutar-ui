@@ -15,7 +15,8 @@ final AudioCache riddimCache = AudioCache();
 final AudioCache futarCache = AudioCache();
 final AudioPlayer mainPlayer = AudioPlayer(mode: PlayerMode.LOW_LATENCY);
 final AudioPlayer secondaryPlayer = AudioPlayer(mode: PlayerMode.LOW_LATENCY);
-final Throttling thr = new Throttling(duration: Duration(seconds: 5));
+final Throttling thr1 = new Throttling(duration: Duration(seconds: 1));
+final Throttling thr5 = new Throttling(duration: Duration(seconds: 5));
 final Location _location = new Location();
 
 Future<dynamic> fetchPercent(String id) async {
@@ -47,13 +48,13 @@ class SoundService {
     this.breakpoints = musicData.files.map((MusicFile file) => file.breakpoint);
 
     _location.onLocationChanged.listen((LocationData location) async {
-      thr.throttle(() async {
+      thr5.throttle(() async {
         final data = await fetchPercent(trip.vehicleId);
         final percent = data["percent"];
         // final sequence = data["sequence"];
 
         if (percent > breakpoints[0]) {
-          reachBreakpoint();
+          reachBreakpoint(percent);
         } else {
           print("breakpoint not reached yet...");
         }
@@ -61,27 +62,44 @@ class SoundService {
     });
   }
 
-  void reachBreakpoint() {
+  void reachBreakpoint(int percent) {
     print("breakpoint reached!");
 
-    nextQueue.add(
-      musicData.files
-          .where((element) => element.breakpoint == breakpoints[0])
-          .toList()[0]
-          .fileName,
-    );
+    final musicFile = musicData.files
+        .where((element) => element.breakpoint == breakpoints[0])
+        .toList()[0]
+        .fileName;
+
+    if (percent == 0) {
+      nextQueue.add("https://storage.googleapis.com/futar/EF-köv.mp3");
+      // stop name
+      // nextQueue.add("https://storage.googleapis.com/futar/EF-köv.mp3");
+      // music file
+      nextQueue.add(musicFile);
+    } else if (percent == 100) {
+      // stop name
+      // nextQueue.add("https://storage.googleapis.com/futar/EF-köv.mp3");
+      // music file
+      nextQueue.add(musicFile);
+    } else {
+      nextQueue.add(musicFile);
+    }
 
     print(nextQueue);
 
     breakpoints.removeAt(0);
   }
 
-  Stream<String> titleStream() async* {
-    if (nextQueue[1] != null) {
-      yield nextQueue[1];
-      nextQueue.removeLast();
-    } else {
-      yield nextQueue[0];
+  void listen() async* {
+    while (true) {
+      thr1.throttle(() async {
+        if (nextQueue[1] != null) {
+          mainPlayer.play(nextQueue[1]);
+          nextQueue.removeLast();
+        } else {
+          mainPlayer.play(nextQueue[0]);
+        }
+      });
     }
   }
 }
