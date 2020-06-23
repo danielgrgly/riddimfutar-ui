@@ -13,12 +13,10 @@ dependencies:
     sdk: flutter
 
   flutter_svg: any
-
   location: ^3.0.0
-
   http: any
-
   flutter_statusbarcolor: any
+  audioplayers: ^0.15.1
 
 dev_dependencies:
   flutter_launcher_icons: "^0.7.5"

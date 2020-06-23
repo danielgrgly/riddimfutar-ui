@@ -1,4 +1,4 @@
-package com.example.riddimfutar
+package hu.danielgrgly.riddimfutar
 
 import io.flutter.embedding.android.FlutterActivity
 

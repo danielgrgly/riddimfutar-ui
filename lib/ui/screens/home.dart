@@ -19,8 +19,7 @@ final Location _location = new Location();
 
 class Home extends StatelessWidget {
   Future<dynamic> fetchMeta() async {
-    final response =
-        await http.get('https://riddimfutar.ey.r.appspot.com/api/v1/metadata');
+    final response = await http.get('https://riddimfutar.ey.r.appspot.com/api/v1/metadata');
 
     if (response.statusCode == 200) {
       return json.decode(response.body);
@@ -29,7 +28,9 @@ class Home extends StatelessWidget {
     }
   }
 
-  Future<dynamic> getLocation() async {
+  Future<void> askPermission() async {
+    print("askpermission");
+
     bool _serviceEnabled;
     PermissionStatus _permissionGranted;
 
@@ -48,8 +49,6 @@ class Home extends StatelessWidget {
         print("denied permission");
       }
     }
-
-    return await _location.getLocation();
   }
 
   @override
@@ -74,6 +73,8 @@ class Home extends StatelessWidget {
             future: fetchMeta(),
             builder: (context, metadata) {
               if (metadata.data != null) {
+                askPermission();
+
                 return StreamBuilder(
                   stream: _location.onLocationChanged,
                   builder: (context, location) {
@@ -94,13 +95,12 @@ class Home extends StatelessWidget {
                         );
                       }
                     } else {
-                      getLocation();
-                      return Loading();
+                      return Text("location...");
                     }
                   },
                 );
               } else {
-                return Loading();
+                return Text("metadata...");
               }
             },
           ),

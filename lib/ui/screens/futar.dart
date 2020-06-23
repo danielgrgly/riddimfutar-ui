@@ -1,6 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:audioplayers/audio_cache.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:http/http.dart' as http;
 
 import "../../core/models/TripDetails.dart";
@@ -15,6 +19,11 @@ final Widget logo = SvgPicture.asset(
   semanticsLabel: 'RIDDIMFUTAR logo',
 );
 
+AudioCache riddimCache = AudioCache();
+AudioCache futarCache = AudioCache();
+AudioPlayer riddimPlayer = AudioPlayer(mode: PlayerMode.LOW_LATENCY);
+AudioPlayer futarPlayer = AudioPlayer(mode: PlayerMode.LOW_LATENCY);
+
 class FutarArguments {
   final String tripId;
 
@@ -22,10 +31,25 @@ class FutarArguments {
 }
 
 class Futar extends StatelessWidget {
+  void nextStop(String fileName) async {
+    int result = await futarPlayer
+        .play('https://storage.googleapis.com/futar/${fileName}');
+    if (result == 1) {
+      print("played");
+      // success
+    }
+  }
+
   Future<dynamic> fetchDetails(String id) async {
+    print('https://riddimfutar.ey.r.appspot.com/api/v1/vehicle?id=$id');
+
+    // https://riddimfutar.ey.r.appspot.com/api/v1/vehicle
+
     final response = await http.get(
-      'http://localhost:8080/api/v1/vehicle?id=$id',
+      'https://riddimfutar.ey.r.appspot.com/api/v1/vehicle?id=$id',
     );
+
+    print(response);
 
     if (response.statusCode == 200) {
       return json.decode(response.body);
@@ -45,6 +69,8 @@ class Futar extends StatelessWidget {
         builder: (context, data) {
           if (data.data != null) {
             TripDetails trip = TripDetails.fromJson(data.data);
+            nextStop(trip.stops[2].fileName);
+
             return Stack(
               children: <Widget>[
                 Center(
@@ -86,7 +112,7 @@ class Futar extends StatelessWidget {
               ],
             );
           } else {
-            return Loading();
+            return Text("fetchdetails...");
           }
         },
       ),
