@@ -33,10 +33,11 @@ class MusicDetails {
 
   factory MusicDetails.fromJson(Map<String, dynamic> json) {
     return MusicDetails(
-      artist: json['artist'],
-      title: json['title'],
-      files:
-          json['files'].map<MusicFile>((i) => MusicFile.fromJson(i)).toList(),
+      artist: json['config']['artist'],
+      title: json["config"]['title'],
+      files: json["config"]['files']
+          .map<MusicFile>((i) => MusicFile.fromJson(i))
+          .toList(),
     );
   }
 }

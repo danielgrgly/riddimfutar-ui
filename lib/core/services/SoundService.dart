@@ -21,7 +21,7 @@ final Location _location = new Location();
 
 Future<dynamic> fetchPercent(String id) async {
   final response = await http.get(
-    'https://riddimfutar.ey.r.appspot.com/api/v1/vehicle/$id/percent',
+    'https://riddimfutar.ey.r.appspot.com/api/v1/percents/$id',
   );
 
   if (response.statusCode == 200) {
@@ -36,49 +36,74 @@ class SoundService {
   MusicDetails musicData;
   List<int> breakpoints;
   List<String> nextQueue;
+  String tripId;
 
   SoundService(
     TripDetails trip,
-    MusicDetails music,
+    String tripId,
     void updateStop,
     void endTrip,
   ) {
-    this.musicData = music;
+    print("xd!!!");
+
+    this.tripId = tripId;
     this.tripData = trip;
-    this.breakpoints = musicData.files.map((MusicFile file) => file.breakpoint);
+    this.nextQueue = new List<String>();
+
+    mainPlayer.setReleaseMode(ReleaseMode.STOP);
+
+    fetchMusic();
+
+    // welcome onboard!
+    nextQueue.add("https://storage.googleapis.com/futar/EF-u%CC%88dv.mp3");
 
     _location.onLocationChanged.listen((LocationData location) async {
       thr5.throttle(() async {
-        final data = await fetchPercent(trip.vehicleId);
-        final percent = data["percent"];
-        // final sequence = data["sequence"];
-
-        if (percent > breakpoints[0]) {
-          reachBreakpoint(percent);
-        } else {
-          print("breakpoint not reached yet...");
-        }
+        checkBreakpoint(location);
       });
+    });
+
+    mainPlayer.onPlayerCompletion.listen((event) {
+      this.listenSounds();
     });
   }
 
-  void reachBreakpoint(int percent) {
-    print("breakpoint reached!");
+  void checkBreakpoint(LocationData location) async {
+    final data = await fetchPercent(this.tripId);
+    final percent = data["stopDistancePercent"];
+    final sequence = data["stopSequence"];
 
-    final musicFile = musicData.files
-        .where((element) => element.breakpoint == breakpoints[0])
-        .toList()[0]
-        .fileName;
+    print(percent);
+    print(breakpoints[0]);
+
+    if (percent >= breakpoints[0]) {
+      reachBreakpoint(percent, sequence);
+    } else {
+      print("breakpoint not reached yet...");
+    }
+  }
+
+  void reachBreakpoint(int percent, int sequence) {
+    print("breakpoint reached");
+
+    final String musicFile = "https://storage.googleapis.com/riddim/riddim/0/" +
+        musicData.files
+            .where((element) => element.breakpoint == breakpoints[0])
+            .toList()[0]
+            .fileName;
+
+    final String stopFile = "https://storage.googleapis.com/futar/" +
+        this.tripData.stops[sequence].fileName;
 
     if (percent == 0) {
-      nextQueue.add("https://storage.googleapis.com/futar/EF-köv.mp3");
+      nextQueue.add("https://storage.googleapis.com/futar/EF-ko%CC%88v.mp3");
       // stop name
-      // nextQueue.add("https://storage.googleapis.com/futar/EF-köv.mp3");
+      nextQueue.add(stopFile);
       // music file
       nextQueue.add(musicFile);
     } else if (percent == 100) {
       // stop name
-      // nextQueue.add("https://storage.googleapis.com/futar/EF-köv.mp3");
+      nextQueue.add(stopFile);
       // music file
       nextQueue.add(musicFile);
     } else {
@@ -90,18 +115,47 @@ class SoundService {
     breakpoints.removeAt(0);
   }
 
-  void listen() async* {
-    while (true) {
-      thr1.throttle(() async {
-        if (nextQueue[1] != null) {
-          mainPlayer.play(nextQueue[1]);
-          nextQueue.removeLast();
-        } else {
-          mainPlayer.play(nextQueue[0]);
-        }
-      });
+  void listenSounds() async {
+    print("i listen");
+    if (nextQueue.length > 1) {
+      print("i squash");
+      play(nextQueue[1], true);
+      // nextQueue.removeAt(0);
+    } else {
+      print("i sleep");
+      play(nextQueue[0], false);
     }
   }
+
+  Future<dynamic> fetchMusic() async {
+    final response = await http.get(
+      'https://riddimfutar.ey.r.appspot.com/api/v1/music/riddim',
+    );
+
+    if (response.statusCode == 200) {
+      this.musicData = MusicDetails.fromJson(json.decode(response.body));
+      this.breakpoints =
+          musicData.files.map((MusicFile file) => file.breakpoint).toList();
+      this.listenSounds();
+      this.reachBreakpoint(0, 0);
+    } else {
+      throw Exception('Failed to load vehicle percentage');
+    }
+  }
+
+  void play(String sound, bool shouldDelete) async {
+    print("playing: $sound");
+
+    await mainPlayer.play(sound);
+
+    if(shouldDelete) {
+      print("=== this.nextQueue ===");
+      print(this.nextQueue);
+      this.nextQueue.removeAt(0);
+      print(this.nextQueue);
+      print("===/===");
+    }
+   }
 }
 
 // void nextStop(String fileName) async {

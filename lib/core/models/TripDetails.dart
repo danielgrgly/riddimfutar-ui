@@ -43,24 +43,22 @@ class TripDetails {
   double lon;
   int stopDistancePercent;
   int stopSequence;
-  String vehicleId;
 
-  TripDetails({
-    // stops
-    this.stops,
-    // trip
-    this.color,
-    this.name,
-    this.description,
-    this.type,
-    // vehicle
-    this.bearing,
-    this.lat,
-    this.lon,
-    this.stopDistancePercent,
-    this.stopSequence,
-    this.vehicleId
-  });
+  TripDetails(
+      {
+      // stops
+      this.stops,
+      // trip
+      this.color,
+      this.name,
+      this.description,
+      this.type,
+      // vehicle
+      this.bearing,
+      this.lat,
+      this.lon,
+      this.stopDistancePercent,
+      this.stopSequence});
 
   factory TripDetails.fromJson(Map<String, dynamic> json) {
     return TripDetails(
@@ -81,7 +79,6 @@ class TripDetails {
       lon: json['vehicle']['location']['lon'],
       stopDistancePercent: json['vehicle']['stopDistancePercent'],
       stopSequence: json['vehicle']['stopSequence'],
-      vehicleId: json['vehicle']['id'],
     );
   }
 }

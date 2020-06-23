@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-;
 import 'package:flutter_svg/flutter_svg.dart';
-;
 import 'package:http/http.dart' as http;
 
 import "../../core/models/TripDetails.dart";
+import "../../core/services/SoundService.dart";
 import "../widgets/Loading.dart";
 import "../widgets/FutarDisplay.dart";
 import "../widgets/Visualizer.dart";
@@ -24,10 +23,13 @@ class FutarArguments {
   FutarArguments(this.tripId);
 }
 
-class Futar extends StatelessWidget {
-  void initPlayer(TripDetails trip) {
+class Futar extends StatefulWidget {
+  @override
+  _FutarState createState() => _FutarState();
+}
 
-  }
+class _FutarState extends State<Futar> {
+  SoundService sound;
 
   Future<dynamic> fetchDetails(String id) async {
     print('https://riddimfutar.ey.r.appspot.com/api/v1/vehicle/$id');
@@ -47,6 +49,10 @@ class Futar extends StatelessWidget {
     }
   }
 
+  void updateStop() {}
+
+  void endTrip() {}
+
   @override
   Widget build(BuildContext context) {
     final FutarArguments args = ModalRoute.of(context).settings.arguments;
@@ -59,7 +65,7 @@ class Futar extends StatelessWidget {
           if (data.data != null) {
             TripDetails trip = TripDetails.fromJson(data.data);
 
-            initPlayer(trip);
+            sound = new SoundService(trip, args.tripId, updateStop, endTrip);
 
             return Stack(
               children: <Widget>[
