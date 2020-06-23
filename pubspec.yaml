@@ -16,6 +16,7 @@ dependencies:
   location: ^3.0.0
   http: any
   flutter_statusbarcolor: any
+  throttling: any
   audioplayers: ^0.15.1
 
 dev_dependencies:
