@@ -35,8 +35,8 @@ class VehicleList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      // future: fetchVehicles(location.latitude, location.longitude),
-      future: fetchVehicles(47.496652, 19.070190),
+      future: fetchVehicles(location.latitude, location.longitude),
+      // future: fetchVehicles(47.496652, 19.070190),
       builder: (context, vehicles) {
         if (vehicles.data != null) {
           List<Vehicle> vehicleList =
