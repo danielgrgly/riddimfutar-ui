@@ -17,7 +17,7 @@ dependencies:
   http: any
   flutter_statusbarcolor: any
   throttling: any
-  audioplayers: ^0.15.1
+  audioplayers: any
 
 dev_dependencies:
   flutter_launcher_icons: "^0.7.5"

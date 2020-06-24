@@ -29,18 +29,17 @@ class Futar extends StatefulWidget {
 }
 
 class _FutarState extends State<Futar> {
+  TripDetails trip;
   SoundService sound;
 
   Future<dynamic> fetchDetails(String id) async {
-    print('https://riddimfutar.ey.r.appspot.com/api/v1/vehicle/$id');
+    print('http://localhost:8080/api/v1/vehicle/$id');
 
-    // https://riddimfutar.ey.r.appspot.com/api/v1/vehicle
+    // http://localhost:8080/api/v1/vehicle
 
     final response = await http.get(
-      'https://riddimfutar.ey.r.appspot.com/api/v1/vehicle/$id',
+      'http://localhost:8080/api/v1/vehicle/$id',
     );
-
-    print(response);
 
     if (response.statusCode == 200) {
       return json.decode(response.body);
@@ -49,25 +48,37 @@ class _FutarState extends State<Futar> {
     }
   }
 
-  void updateStop() {}
+  void asyncInit() async {
+    final FutarArguments args = ModalRoute.of(context).settings.arguments;
+    final details = await fetchDetails(args.tripId);
 
-  void endTrip() {}
+    setState(() {
+      trip = TripDetails.fromJson(details);
+      sound = new SoundService(trip, args.tripId, updateStop, endTrip);
+    });
+  }
+
+  void updateStop(int sequence) {
+    setState(() {
+      trip.stopSequence = sequence;
+    });
+  }
+
+  void endTrip() {
+    Navigator.of(context).pop();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final FutarArguments args = ModalRoute.of(context).settings.arguments;
+    if (trip == null) {
+      asyncInit();
+    }
 
     return Scaffold(
       backgroundColor: Color.fromRGBO(33, 32, 70, 1),
-      body: FutureBuilder(
-        future: fetchDetails(args.tripId),
-        builder: (context, data) {
-          if (data.data != null) {
-            TripDetails trip = TripDetails.fromJson(data.data);
-
-            sound = new SoundService(trip, args.tripId, updateStop, endTrip);
-
-            return Stack(
+      body: trip != null
+          ? Stack(
               children: <Widget>[
                 Center(
                   child: Visualizer(
@@ -76,9 +87,7 @@ class _FutarState extends State<Futar> {
                 ),
                 Column(
                   children: <Widget>[
-                    FutarDisplay(
-                      trip: trip,
-                    ),
+                    FutarDisplay(trip: trip),
                     Spacer(),
                     Artist(color: trip.color, name: "Lil Tango"),
                     SizedBox(
@@ -106,12 +115,8 @@ class _FutarState extends State<Futar> {
                   ],
                 ),
               ],
-            );
-          } else {
-            return Text("fetchdetails...");
-          }
-        },
-      ),
+            )
+          : Text("loading..."),
     );
   }
 }

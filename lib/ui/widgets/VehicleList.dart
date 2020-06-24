@@ -22,7 +22,7 @@ class VehicleList extends StatelessWidget {
 
   Future<dynamic> fetchVehicles(double lat, double lon) async {
     final response = await http.get(
-      'https://riddimfutar.ey.r.appspot.com/api/v1/vehicles?lat=$lat&lon=$lon',
+      'http://localhost:8080/api/v1/vehicles?lat=$lat&lon=$lon',
     );
 
     if (response.statusCode == 200) {
