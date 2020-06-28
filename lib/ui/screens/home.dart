@@ -19,7 +19,8 @@ final Location _location = new Location();
 
 class Home extends StatelessWidget {
   Future<dynamic> fetchMeta() async {
-    final response = await http.get('http://localhost:8080/api/v1/metadata');
+    final response =
+        await http.get('https://riddimfutar.ey.r.appspot.com/api/v1/metadata');
 
     if (response.statusCode == 200) {
       return json.decode(response.body);
@@ -93,12 +94,12 @@ class Home extends StatelessWidget {
                         );
                       }
                     } else {
-                      return Text("location...");
+                      return Loading();
                     }
                   },
                 );
               } else {
-                return Text("metadata...");
+                return Loading();
               }
             },
           ),

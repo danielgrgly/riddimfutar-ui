@@ -2,19 +2,49 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:math' show cos, sqrt, asin;
 
+import 'package:audioplayers/audio_cache.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:throttling/throttling.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 import "../../core/models/MusicDetails.dart";
 import "../../core/models/TripDetails.dart";
 
 Timer _timer;
 final AudioPlayer _mainPlayer = AudioPlayer(mode: PlayerMode.LOW_LATENCY);
-// final AudioPlayer secondaryPlayer = AudioPlayer(mode: PlayerMode.LOW_LATENCY);
-final Throttling _thr5 = new Throttling(duration: Duration(seconds: 5));
-final Location _location = new Location();
+final AudioCache _mainCache = AudioCache();
+final Throttling _thr5 = Throttling(duration: Duration(seconds: 5));
+final Location _location = Location();
+
+class SoundCacheManager extends BaseCacheManager {
+  static const key = "soundCache";
+
+  static SoundCacheManager _instance;
+
+  factory SoundCacheManager() {
+    if (_instance == null) {
+      _instance = new SoundCacheManager._();
+    }
+    return _instance;
+  }
+
+  SoundCacheManager._()
+      : super(
+          key,
+          maxAgeCacheObject: Duration(days: 30),
+          maxNrOfCacheObjects: 80,
+        );
+
+  @override
+  Future<String> getFilePath() async {
+    var directory = await getTemporaryDirectory();
+    return path.join(directory.path, key);
+  }
+}
 
 double calculateDistance(lat1, lon1, lat2, lon2) {
   var p = 0.017453292519943295;
@@ -43,7 +73,7 @@ class SoundService {
     this.tripId = tripId;
     this.tripData = trip;
     this.sequence = trip.stopSequence;
-    this.nextQueue = new List<String>();
+    this.nextQueue = List<String>();
     this.updateStop = updateStop;
     this.endTrip = endTrip;
 
@@ -74,7 +104,7 @@ class SoundService {
     int percent = 0;
 
     _timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
-      percent += 2;
+      percent += 3;
 
       if (percent >= 100) {
         percent = 0;
@@ -159,10 +189,6 @@ class SoundService {
   }
 
   void _listenSounds() {
-    if (nextQueue.length > 1) {
-      nextQueue.removeAt(0);
-    }
-
     _play(nextQueue[0]);
 
     if (nextQueue[0] == "https://storage.googleapis.com/futar/EF-kov.mp3") {
@@ -173,21 +199,41 @@ class SoundService {
       nextQueue = [];
       endTrip();
     }
+
+    if (nextQueue.length > 1) {
+      nextQueue.removeAt(0);
+    }
   }
 
   Future<dynamic> _fetchMusic() async {
     final response = await http.get(
-      'http://localhost:8080/api/v1/music/riddim',
+      'https://riddimfutar.ey.r.appspot.com/api/v1/music/riddim',
     );
 
     if (response.statusCode == 200) {
       this.musicData = MusicDetails.fromJson(json.decode(response.body));
+      this.musicData.files.forEach((element) async {
+        _cacheFile(
+          "https://storage.googleapis.com/riddim/riddim/0/" + element.fileName,
+        );
+      });
     } else {
       throw Exception('Failed to load vehicle percentage');
     }
   }
 
-  void _play(String sound) async {
-    await _mainPlayer.play(sound);
+  void _cacheFile(String url) async {
+    final file = await SoundCacheManager().downloadFile(url);
+    _mainCache.load(file.file.path);
+  }
+
+  Future<String> _retrievePath(String url) async {
+    final file = await SoundCacheManager().getSingleFile(url);
+    return file.path;
+  }
+
+  void _play(String url) async {
+    String path = await _retrievePath(url);
+    await _mainPlayer.play(path, isLocal: true);
   }
 }

@@ -33,12 +33,8 @@ class _FutarState extends State<Futar> {
   SoundService sound;
 
   Future<dynamic> fetchDetails(String id) async {
-    print('http://localhost:8080/api/v1/vehicle/$id');
-
-    // http://localhost:8080/api/v1/vehicle
-
     final response = await http.get(
-      'http://localhost:8080/api/v1/vehicle/$id',
+      'https://riddimfutar.ey.r.appspot.com/api/v1/vehicle/$id',
     );
 
     if (response.statusCode == 200) {
@@ -116,7 +112,7 @@ class _FutarState extends State<Futar> {
                 ),
               ],
             )
-          : Text("loading..."),
+          : Loading(),
     );
   }
 }
