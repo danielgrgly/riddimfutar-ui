@@ -17,7 +17,7 @@ import "../../core/models/TripDetails.dart";
 Timer _timer;
 final AudioPlayer _mainPlayer = AudioPlayer(mode: PlayerMode.LOW_LATENCY);
 final AudioCache _mainCache = AudioCache();
-final Throttling _thr5 = Throttling(duration: Duration(seconds: 5));
+final Throttling _thr3 = Throttling(duration: Duration(seconds: 3));
 final Location _location = Location();
 
 class SoundCacheManager extends BaseCacheManager {
@@ -90,28 +90,42 @@ class SoundService {
 
     _listenSounds();
 
-    // _timer = Timer.periodic(
-    //   Duration(seconds: 5),
-    //   (Timer t) => _checkBreakpoint(),
-    // );
+    _location.onLocationChanged.listen((LocationData location) async {
+      _thr3.throttle(() async {
+        // distance between two stops
+        double stopDist = calculateDistance(
+          tripData.stops[sequence].lat,
+          tripData.stops[sequence].lon,
+          tripData.stops[sequence + 1].lat,
+          tripData.stops[sequence + 1].lon,
+        );
 
-    // _location.onLocationChanged.listen((LocationData location) async {
-    //   _thr5.throttle(() async {
-    //     _checkBreakpoint();
-    //   });
-    // });
+        // distance between user and next stop
+        double nextDist = calculateDistance(
+          location.latitude,
+          location.longitude,
+          tripData.stops[sequence + 1].lat,
+          tripData.stops[sequence + 1].lon,
+        );
 
-    int percent = 0;
+        // stop distance percentage
+        double percent = (nextDist / stopDist) * 100;
 
-    _timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
-      percent += 3;
-
-      if (percent >= 100) {
-        percent = 0;
-      }
-
-      _checkBreakpoint(percent);
+        _checkBreakpoint(percent.toInt());
+      });
     });
+
+    // DEMO CODE
+    // for testing purposes
+    // uncomment this (and comment the previous) when trying to test the FUTAR service
+    // int percent = 0;
+    // _timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
+    //   percent += 3;
+    //   if (percent >= 100) {
+    //     percent = 0;
+    //   }
+    //   _checkBreakpoint(percent);
+    // });
 
     _mainPlayer.onPlayerCompletion.listen((event) {
       _listenSounds();
@@ -119,6 +133,8 @@ class SoundService {
   }
 
   void _checkBreakpoint(int percent) async {
+    print("percentage: $percent");
+
     if (percent >= musicData.files[0].breakpoint) {
       _reachBreakpoint(percent);
     }
