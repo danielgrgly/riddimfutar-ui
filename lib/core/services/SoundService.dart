@@ -145,8 +145,6 @@ class SoundService {
 
   void _reachBreakpoint(int percent) async {
     final MusicFile music = musicData.files[0];
-    final musicFile =
-        "https://storage.googleapis.com/riddim/riddim/0/" + music.fileName;
     final String stopFile = "https://storage.googleapis.com/futar/" +
         this.tripData.stops[sequence].fileName;
 
@@ -160,12 +158,12 @@ class SoundService {
         nextQueue.add("https://storage.googleapis.com/futar/EF-veg.mp3");
       }
       // music file
-      nextQueue.add(musicFile);
+      nextQueue.add(music.pathURL);
     } else if (percent >= 97) {
       // stop name
       nextQueue.add(stopFile);
       // music file
-      nextQueue.add(musicFile);
+      nextQueue.add(music.pathURL);
 
       if (tripData.stops.length - 1 >= sequence + 1) {
         sequence++;
@@ -176,7 +174,7 @@ class SoundService {
         nextQueue.add("https://storage.googleapis.com/futar/EF-visz.mp3");
       }
     } else {
-      nextQueue.add(musicFile);
+      nextQueue.add(music.pathURL);
     }
 
     // if (!music.loopable) {
@@ -229,9 +227,7 @@ class SoundService {
     if (response.statusCode == 200) {
       this.musicData = MusicDetails.fromJson(json.decode(response.body));
       this.musicData.files.forEach((element) async {
-        _cacheFile(
-          "https://storage.googleapis.com/riddim/riddim/0/" + element.fileName,
-        );
+        _cacheFile(element.pathURL);
       });
     } else {
       throw Exception('Failed to load vehicle percentage');
