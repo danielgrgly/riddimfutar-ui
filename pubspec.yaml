@@ -19,6 +19,7 @@ dependencies:
   throttling: any
   audioplayers: any
   flutter_cache_manager: any
+  marquee: any
 
 dev_dependencies:
   flutter_launcher_icons: "^0.7.5"
@@ -49,6 +50,9 @@ flutter:
     - family: RoadRage
       fonts:
         - asset: assets/font/RoadRage.ttf
+    - family: 5by7
+      fonts:
+        - asset: assets/font/5by7.ttf
 
 flutter_icons:
   android: true

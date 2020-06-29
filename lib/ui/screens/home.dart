@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
-import 'package:riddimfutar/ui/widgets/VehicleList.dart';
 
 import '../widgets/Error.dart';
 import '../widgets/Loading.dart';
-// import '../widgets/VehicleList.dart';
+import '../widgets/RollingText.dart';
+import '../widgets/VehicleList.dart';
 
 final String assetName = 'assets/svg/logo.svg';
 final Widget logo = SvgPicture.asset(
@@ -55,15 +55,18 @@ class Home extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       body: ListView(
-        padding: EdgeInsets.all(34.0),
+        padding: EdgeInsets.symmetric(vertical: 34.0),
         shrinkWrap: true,
         children: <Widget>[
+          SizedBox(
+            height: 40,
+          ),
           Center(
             child: SafeArea(
               bottom: false,
               child: SizedBox(
                 child: logo,
-                height: 120,
+                height: 80,
                 width: 320,
               ),
             ),
@@ -86,7 +89,16 @@ class Home extends StatelessWidget {
                               location.data.latitude &&
                           metadata.data["upperRightLongitude"] >=
                               location.data.longitude) {
-                        return VehicleList(location: location.data);
+                        return Column(
+                          children: <Widget>[
+                            metadata.data["message"] != null
+                                ? RollingText(
+                                    text: metadata.data["message"],
+                                  )
+                                : null,
+                            VehicleList(location: location.data)
+                          ],
+                        );
                       } else {
                         return Container(
                           height: MediaQuery.of(context).size.height * 0.6,

@@ -42,30 +42,33 @@ class VehicleList extends StatelessWidget {
           List<Vehicle> vehicleList =
               vehicles.data.map<Vehicle>((i) => Vehicle.fromJson(i)).toList();
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                "Válassz járatot!",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-              ),
-              Text(
-                "A közeledben levő aktív BKK járműveket listázzuk.",
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(
-                height: 14,
-              ),
-              ...vehicleList.map(
-                (Vehicle vehicle) => GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTap: () {
-                    selectVehicle(context, vehicle);
-                  },
-                  child: VehicleCard(vehicle),
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 34.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  "Válassz járatot!",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
                 ),
-              )
-            ],
+                Text(
+                  "A közeledben levő aktív BKK járműveket listázzuk.",
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(
+                  height: 14,
+                ),
+                ...vehicleList.map(
+                  (Vehicle vehicle) => GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      selectVehicle(context, vehicle);
+                    },
+                    child: VehicleCard(vehicle),
+                  ),
+                )
+              ],
+            ),
           );
         } else {
           return Loading();

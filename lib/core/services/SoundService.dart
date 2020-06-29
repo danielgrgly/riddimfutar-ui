@@ -111,6 +111,17 @@ class SoundService {
         // stop distance percentage
         double percent = (nextDist / stopDist) * 100;
 
+        print("user loc: ${location.latitude}, ${location.longitude}");
+        print(
+          "sequence loc: ${tripData.stops[sequence].lat}, ${tripData.stops[sequence].lon}",
+        );
+        print(
+          "sequence + 1 loc: ${tripData.stops[sequence + 1].lat}, ${tripData.stops[sequence + 1].lon}",
+        );
+        print("stopDist: $stopDist");
+        print("nextDist: $nextDist");
+        print("percent: $percent");
+
         _checkBreakpoint(percent.toInt());
       });
     });
