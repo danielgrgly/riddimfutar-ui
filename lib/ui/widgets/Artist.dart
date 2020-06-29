@@ -31,7 +31,7 @@ class Artist extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  "Jelenlegi musorvezeto:",
+                  "Jelenlegi DJ:",
                   style: TextStyle(
                     fontFamily: "RoadRage",
                     fontSize: 20,

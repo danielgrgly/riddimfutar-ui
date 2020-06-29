@@ -84,6 +84,8 @@ class SoundService {
     await _fetchMusic();
 
     // welcome onboard!
+    // add twice because the initial one gets removed
+    nextQueue.add("https://storage.googleapis.com/futar/EF-udv.mp3");
     nextQueue.add("https://storage.googleapis.com/futar/EF-udv.mp3");
 
     _reachBreakpoint(0);
@@ -94,33 +96,22 @@ class SoundService {
       _thr3.throttle(() async {
         // distance between two stops
         double stopDist = calculateDistance(
+          tripData.stops[sequence - 1].lat,
+          tripData.stops[sequence - 1].lon,
           tripData.stops[sequence].lat,
           tripData.stops[sequence].lon,
-          tripData.stops[sequence + 1].lat,
-          tripData.stops[sequence + 1].lon,
         );
 
         // distance between user and next stop
         double nextDist = calculateDistance(
+          tripData.stops[sequence - 1].lat,
+          tripData.stops[sequence - 1].lon,
           location.latitude,
           location.longitude,
-          tripData.stops[sequence + 1].lat,
-          tripData.stops[sequence + 1].lon,
         );
 
         // stop distance percentage
         double percent = (nextDist / stopDist) * 100;
-
-        print("user loc: ${location.latitude}, ${location.longitude}");
-        print(
-          "sequence loc: ${tripData.stops[sequence].lat}, ${tripData.stops[sequence].lon}",
-        );
-        print(
-          "sequence + 1 loc: ${tripData.stops[sequence + 1].lat}, ${tripData.stops[sequence + 1].lon}",
-        );
-        print("stopDist: $stopDist");
-        print("nextDist: $nextDist");
-        print("percent: $percent");
 
         _checkBreakpoint(percent.toInt());
       });
@@ -144,22 +135,17 @@ class SoundService {
   }
 
   void _checkBreakpoint(int percent) async {
-    print("percentage: $percent");
-
     if (percent >= musicData.files[0].breakpoint) {
       _reachBreakpoint(percent);
-    }
-    if (percent >= 97) {
-      _reachBreakpoint(100);
     }
   }
 
   void _reachBreakpoint(int percent) async {
-    final MusicFile music = musicData.files[0];
+    final MusicFile music = musicData.files[musicData.files.lastIndexWhere(
+      (element) => element.breakpoint <= percent,
+    )];
     final String stopFile = "https://storage.googleapis.com/futar/" +
         this.tripData.stops[sequence].fileName;
-
-    musicData.files.removeAt(0);
 
     if (percent == 0) {
       nextQueue.add("https://storage.googleapis.com/futar/EF-kov.mp3");
@@ -177,7 +163,7 @@ class SoundService {
       nextQueue.add(music.pathURL);
 
       if (tripData.stops.length - 1 >= sequence + 1) {
-        sequence++;
+        sequence += 1;
         await _fetchMusic();
         _reachBreakpoint(0);
       } else {
@@ -214,6 +200,10 @@ class SoundService {
   }
 
   void _listenSounds() {
+    if (nextQueue.length > 1) {
+      nextQueue.removeAt(0);
+    }
+
     _play(nextQueue[0]);
 
     if (nextQueue[0] == "https://storage.googleapis.com/futar/EF-kov.mp3") {
@@ -223,10 +213,6 @@ class SoundService {
     if (nextQueue[0] == "https://storage.googleapis.com/futar/EF-visz.mp3") {
       nextQueue = [];
       endTrip();
-    }
-
-    if (nextQueue.length > 1) {
-      nextQueue.removeAt(0);
     }
   }
 
