@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
+import 'package:location/location.dart';
 
 import "../../core/models/TripDetails.dart";
 import "../../core/services/SoundService.dart";
@@ -19,8 +20,9 @@ final Widget logo = SvgPicture.asset(
 
 class FutarArguments {
   final String tripId;
+  final LocationData location;
 
-  FutarArguments(this.tripId);
+  FutarArguments(this.tripId, this.location);
 }
 
 class Futar extends StatefulWidget {
@@ -50,7 +52,13 @@ class _FutarState extends State<Futar> {
 
     setState(() {
       trip = TripDetails.fromJson(details);
-      sound = new SoundService(trip, args.tripId, updateStop, endTrip);
+      sound = new SoundService(
+        trip,
+        args.tripId,
+        args.location,
+        updateStop,
+        endTrip,
+      );
     });
   }
 
@@ -61,7 +69,16 @@ class _FutarState extends State<Futar> {
   }
 
   void endTrip() {
+    sound.destroy();
+    sound = null;
     Navigator.of(context).pop();
+    super.dispose();
+  }
+
+  @override
+  void dispose() {
+    sound.destroy();
+    sound = null;
     super.dispose();
   }
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 
 import '../../core/models/Vehicle.dart';
@@ -11,13 +12,13 @@ import './VehicleCard.dart';
 class VehicleList extends StatelessWidget {
   VehicleList({this.location});
 
-  final dynamic location;
+  final LocationData location;
 
   void selectVehicle(BuildContext context, Vehicle vehicle) {
     Navigator.pushNamed(
       context,
       "/futar",
-      arguments: FutarArguments(vehicle.tripId),
+      arguments: FutarArguments(vehicle.tripId, location),
     );
   }
 

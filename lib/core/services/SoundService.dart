@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:async';
-import 'dart:math' show cos, sqrt, asin;
 
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:location/location.dart';
@@ -10,6 +9,7 @@ import 'package:throttling/throttling.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
+import "../../core/utils.dart";
 import "../../core/models/MusicDetails.dart";
 import "../../core/models/TripDetails.dart";
 
@@ -44,15 +44,6 @@ class SoundCacheManager extends BaseCacheManager {
   }
 }
 
-double calculateDistance(lat1, lon1, lat2, lon2) {
-  var p = 0.017453292519943295;
-  var c = cos;
-  var a = 0.5 -
-      c((lat2 - lat1) * p) / 2 +
-      c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
-  return 12742 * asin(sqrt(a));
-}
-
 class SoundService {
   TripDetails tripData;
   MusicDetails musicData;
@@ -66,30 +57,57 @@ class SoundService {
   SoundService(
     TripDetails trip,
     String tripId,
+    LocationData userLocation,
     Function updateStop,
     Function endTrip,
   ) {
     this.tripId = tripId;
     this.tripData = trip;
-    this.sequence = trip.stopSequence;
+    this.sequence = 0;
     this.nextQueue = List<String>();
     this.cacheMap = new Map<String, String>();
     this.updateStop = updateStop;
     this.endTrip = endTrip;
 
+    final List<double> distances = this
+        .tripData
+        .stops
+        .map(
+          (stop) => calculateDistance(
+            stop.lat,
+            stop.lon,
+            userLocation.latitude,
+            userLocation.longitude,
+          ),
+        )
+        .toList();
+
+    double smallestValue = distances[0];
+    int smallestIndex = 0;
+
+    for (int i = 0; i < distances.length; i++) {
+      if (distances[i] < smallestValue) {
+        smallestValue = distances[i];
+        smallestIndex = i;
+      }
+    }
+
+    sequence = smallestIndex + 1;
+
+    print("sequence: $sequence");
+
     _init();
   }
 
   void _init() async {
-    await _fetchMusic();
-
     // welcome onboard!
     // add twice because the initial one gets removed
     nextQueue.add("https://storage.googleapis.com/futar/EF-udv.mp3");
     nextQueue.add("https://storage.googleapis.com/futar/EF-udv.mp3");
 
+    await _fetchMusic();
+    updateStop(sequence);
     _reachBreakpoint(0);
-
     _listenSounds();
 
     _location.onLocationChanged.listen((LocationData location) async {
@@ -252,5 +270,17 @@ class SoundService {
       print("delay: $delay");
       _listenSounds();
     });
+  }
+
+  void destroy() {
+    _mainPlayer.stop();
+
+    this.tripId = null;
+    this.tripData = null;
+    this.sequence = 0;
+    this.nextQueue = List<String>();
+    this.cacheMap = new Map<String, String>();
+    this.updateStop = null;
+    this.endTrip = null;
   }
 }
