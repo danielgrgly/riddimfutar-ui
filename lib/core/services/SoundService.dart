@@ -2,11 +2,10 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:math' show cos, sqrt, asin;
 
-import 'package:audioplayers/audio_cache.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
-import 'package:audioplayers/audioplayers.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:throttling/throttling.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -15,8 +14,7 @@ import "../../core/models/MusicDetails.dart";
 import "../../core/models/TripDetails.dart";
 
 Timer _timer;
-final AudioPlayer _mainPlayer = AudioPlayer(mode: PlayerMode.LOW_LATENCY);
-final AudioCache _mainCache = AudioCache();
+final _mainPlayer = AudioPlayer();
 final Throttling _thr3 = Throttling(duration: Duration(seconds: 3));
 final Location _location = Location();
 
@@ -63,6 +61,7 @@ class SoundService {
   int sequence;
   Function updateStop;
   Function endTrip;
+  Map<String, String> cacheMap;
 
   SoundService(
     TripDetails trip,
@@ -74,6 +73,7 @@ class SoundService {
     this.tripData = trip;
     this.sequence = trip.stopSequence;
     this.nextQueue = List<String>();
+    this.cacheMap = new Map<String, String>();
     this.updateStop = updateStop;
     this.endTrip = endTrip;
 
@@ -128,10 +128,6 @@ class SoundService {
     //   }
     //   _checkBreakpoint(percent);
     // });
-
-    _mainPlayer.onPlayerCompletion.listen((event) {
-      _listenSounds();
-    });
   }
 
   void _checkBreakpoint(int percent) async {
@@ -233,16 +229,28 @@ class SoundService {
 
   void _cacheFile(String url) async {
     final file = await SoundCacheManager().downloadFile(url);
-    _mainCache.load(file.file.path);
+    cacheMap[url] = file.file.path;
   }
 
   Future<String> _retrievePath(String url) async {
-    final file = await SoundCacheManager().getSingleFile(url);
-    return file.path;
+    if (cacheMap[url] != null) {
+      return cacheMap[url];
+    } else {
+      final file = await SoundCacheManager().getSingleFile(url);
+      return file.path;
+    }
   }
 
   void _play(String url) async {
     String path = await _retrievePath(url);
-    await _mainPlayer.play(path, isLocal: true);
+    Duration duration = await _mainPlayer.setFilePath(path);
+    _mainPlayer.play();
+
+    int delay = url.contains("futar") ? -500 : 125;
+
+    Future.delayed(Duration(milliseconds: duration.inMilliseconds - delay), () {
+      print("delay: $delay");
+      _listenSounds();
+    });
   }
 }

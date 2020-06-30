@@ -17,7 +17,7 @@ dependencies:
   http: any
   flutter_statusbarcolor: any
   throttling: any
-  audioplayers: any
+  just_audio: any
   flutter_cache_manager: any
   marquee: any
 
