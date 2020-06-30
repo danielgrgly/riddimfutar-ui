@@ -4,8 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 
-import '../widgets/Error.dart';
 import '../widgets/Loading.dart';
+import '../widgets/LocationOutOfBounds.dart';
 import '../widgets/RollingText.dart';
 import '../widgets/VehicleList.dart';
 
@@ -102,7 +102,7 @@ class Home extends StatelessWidget {
                       } else {
                         return Container(
                           height: MediaQuery.of(context).size.height * 0.6,
-                          child: Error(),
+                          child: LocationOutOfBounds(),
                         );
                       }
                     } else {

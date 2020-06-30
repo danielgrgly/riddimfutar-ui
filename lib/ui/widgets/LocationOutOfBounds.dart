@@ -7,7 +7,7 @@ final Widget budapestSvg = SvgPicture.asset(
   semanticsLabel: 'Budapest illusztráció',
 );
 
-class Error extends StatelessWidget {
+class LocationOutOfBounds extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(

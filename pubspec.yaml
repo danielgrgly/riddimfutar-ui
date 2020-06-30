@@ -36,6 +36,7 @@ flutter:
     - assets/svg/budapest.svg
     - assets/svg/dot.svg
     - assets/svg/logo.svg
+    - assets/svg/no_vehicles.svg
     - assets/svg/stop.svg
     - assets/svg/terminus.svg
 

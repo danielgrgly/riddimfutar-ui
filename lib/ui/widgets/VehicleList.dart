@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:riddimfutar/ui/screens/futar.dart';
 
 import '../../core/models/Vehicle.dart';
-import './VehicleCard.dart';
+import '../screens/futar.dart';
 import "./Loading.dart";
+import './NoVehiclesAround.dart';
+import './VehicleCard.dart';
 
 class VehicleList extends StatelessWidget {
   VehicleList({this.location});
@@ -42,34 +43,37 @@ class VehicleList extends StatelessWidget {
           List<Vehicle> vehicleList =
               vehicles.data.map<Vehicle>((i) => Vehicle.fromJson(i)).toList();
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 34.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  "Válassz járatot!",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-                ),
-                Text(
-                  "A közeledben levő aktív BKK járműveket listázzuk.",
-                  style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(
-                  height: 14,
-                ),
-                ...vehicleList.map(
-                  (Vehicle vehicle) => GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTap: () {
-                      selectVehicle(context, vehicle);
-                    },
-                    child: VehicleCard(vehicle),
+          return vehicleList.length > 0
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 34.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        "Válassz járatot!",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 22),
+                      ),
+                      Text(
+                        "A közeledben levő aktív BKK járműveket listázzuk.",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      SizedBox(
+                        height: 14,
+                      ),
+                      ...vehicleList.map(
+                        (Vehicle vehicle) => GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: () {
+                            selectVehicle(context, vehicle);
+                          },
+                          child: VehicleCard(vehicle),
+                        ),
+                      )
+                    ],
                   ),
                 )
-              ],
-            ),
-          );
+              : NoVehiclesAround();
         } else {
           return Loading();
         }
