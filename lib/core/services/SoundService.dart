@@ -53,6 +53,7 @@ class SoundService {
   Function updateStop;
   Function endTrip;
   Map<String, String> cacheMap;
+  StreamSubscription _locationStream;
 
   SoundService(
     TripDetails trip,
@@ -110,7 +111,7 @@ class SoundService {
     _reachBreakpoint(0);
     _listenSounds();
 
-    _location.onLocationChanged.listen((LocationData location) async {
+    _locationStream = _location.onLocationChanged.listen((LocationData location) async {
       _thr3.throttle(() async {
         // distance between two stops
         double stopDist = calculateDistance(
@@ -274,6 +275,7 @@ class SoundService {
 
   void destroy() {
     _mainPlayer.stop();
+    _locationStream.cancel();
 
     this.tripId = null;
     this.tripData = null;
