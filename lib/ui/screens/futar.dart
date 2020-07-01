@@ -26,11 +26,13 @@ class FutarArguments {
 }
 
 class Futar extends StatefulWidget {
+  const Futar({GlobalKey<FutarState> key}) : super(key: key);
+
   @override
-  _FutarState createState() => _FutarState();
+  FutarState createState() => FutarState();
 }
 
-class _FutarState extends State<Futar> {
+class FutarState extends State<Futar> {
   TripDetails trip;
   SoundService sound;
 
@@ -96,6 +98,7 @@ class _FutarState extends State<Futar> {
                 Center(
                   child: Visualizer(
                     trip: trip,
+                    futarKey: widget.key,
                   ),
                 ),
                 Column(

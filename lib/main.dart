@@ -16,6 +16,8 @@ class Riddimfutar extends StatelessWidget {
   Widget build(BuildContext context) {
     FlutterStatusbarcolor.setStatusBarWhiteForeground(true);
 
+    final GlobalKey<FutarState> _futarKey = new GlobalKey<FutarState>();
+
     return MaterialApp(
       title: "Budipest",
       theme: ThemeData(
@@ -27,7 +29,7 @@ class Riddimfutar extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => Home(),
-        '/futar': (context) => Futar(),
+        '/futar': (context) => Futar(key: _futarKey),
         '/about': (context) => About()
       },
     );

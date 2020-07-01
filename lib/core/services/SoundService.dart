@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:core';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
+import 'package:riddimfutar/core/models/WaveformData.dart';
 import 'package:throttling/throttling.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -54,6 +57,7 @@ class SoundService {
   Function endTrip;
   Map<String, String> cacheMap;
   StreamSubscription _locationStream;
+  WaveformData _rawWaveformData;
 
   SoundService(
     TripDetails trip,
@@ -95,8 +99,6 @@ class SoundService {
 
     sequence = smallestIndex + 1;
 
-    print("sequence: $sequence");
-
     _init();
   }
 
@@ -111,7 +113,8 @@ class SoundService {
     _reachBreakpoint(0);
     _listenSounds();
 
-    _locationStream = _location.onLocationChanged.listen((LocationData location) async {
+    _locationStream =
+        _location.onLocationChanged.listen((LocationData location) async {
       _thr3.throttle(() async {
         // distance between two stops
         double stopDist = calculateDistance(
@@ -265,12 +268,43 @@ class SoundService {
     Duration duration = await _mainPlayer.setFilePath(path);
     _mainPlayer.play();
 
-    int delay = url.contains("futar") ? -500 : 125;
+    int delay;
+
+    if (url.contains("futar")) {
+      delay = -500;
+
+      _rawWaveformData = null;
+    } else {
+      delay = 125;
+
+      final MusicFile music = musicData.files[musicData.files.lastIndexWhere(
+        (element) => element.pathURL == url,
+      )];
+
+      _rawWaveformData = music.waveform;
+    }
 
     Future.delayed(Duration(milliseconds: duration.inMilliseconds - delay), () {
-      print("delay: $delay");
       _listenSounds();
     });
+  }
+
+  Stream<int> waveformStream() async* {
+    int i = 0;
+    while (true) {
+      await Future.delayed(Duration(milliseconds: 180));
+      if (_rawWaveformData != null) {
+        i += 180;
+
+        if (i >= _rawWaveformData.data.length) {
+          i = 0;
+        }
+
+        yield _rawWaveformData.data[i].abs();
+      } else {
+        yield 0;
+      }
+    }
   }
 
   void destroy() {
