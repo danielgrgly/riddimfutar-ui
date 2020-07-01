@@ -56,7 +56,6 @@ class SoundService {
   Function updateStop;
   Function endTrip;
   Map<String, String> cacheMap;
-  StreamSubscription _locationStream;
   WaveformData _rawWaveformData;
 
   SoundService(
@@ -113,31 +112,10 @@ class SoundService {
     _reachBreakpoint(0);
     _listenSounds();
 
-    _locationStream =
-        _location.onLocationChanged.listen((LocationData location) async {
-      _thr3.throttle(() async {
-        // distance between two stops
-        double stopDist = calculateDistance(
-          tripData.stops[sequence - 1].lat,
-          tripData.stops[sequence - 1].lon,
-          tripData.stops[sequence].lat,
-          tripData.stops[sequence].lon,
-        );
-
-        // distance between user and next stop
-        double nextDist = calculateDistance(
-          tripData.stops[sequence - 1].lat,
-          tripData.stops[sequence - 1].lon,
-          location.latitude,
-          location.longitude,
-        );
-
-        // stop distance percentage
-        double percent = (nextDist / stopDist) * 100;
-
-        _checkBreakpoint(percent.toInt());
-      });
-    });
+    Timer.periodic(
+      Duration(seconds: 3),
+      (Timer t) => _checkBreakpoint(),
+    );
 
     // DEMO CODE
     // for testing purposes
@@ -152,16 +130,40 @@ class SoundService {
     // });
   }
 
-  void _checkBreakpoint(int percent) async {
+  void _checkBreakpoint() async {
+    print("checkin location");
+    final LocationData location = await _location.getLocation();
+
+    // distance between two stops
+    double stopDist = calculateDistance(
+      tripData.stops[sequence - 1].lat,
+      tripData.stops[sequence - 1].lon,
+      tripData.stops[sequence].lat,
+      tripData.stops[sequence].lon,
+    );
+
+    // distance between user and next stop
+    double nextDist = calculateDistance(
+      tripData.stops[sequence - 1].lat,
+      tripData.stops[sequence - 1].lon,
+      location.latitude,
+      location.longitude,
+    );
+
+    // stop distance percentage
+    int percent = ((nextDist / stopDist) * 100).toInt();
+
     if (percent >= musicData.files[0].breakpoint) {
       _reachBreakpoint(percent);
     }
   }
 
   void _reachBreakpoint(int percent) async {
-    final MusicFile music = musicData.files[musicData.files.lastIndexWhere(
+    final int musicIndex = musicData.files.lastIndexWhere(
       (element) => element.breakpoint <= percent,
-    )];
+    );
+    final MusicFile music = musicData.files[musicIndex];
+
     final String stopFile = "https://storage.googleapis.com/futar/" +
         this.tripData.stops[sequence].fileName;
 
@@ -169,16 +171,22 @@ class SoundService {
       nextQueue.add("https://storage.googleapis.com/futar/EF-kov.mp3");
       // stop name
       nextQueue.add(stopFile);
+
       if (tripData.stops.length - 1 < sequence + 1) {
         nextQueue.add("https://storage.googleapis.com/futar/EF-veg.mp3");
       }
+
+      if (musicIndex > 0 && !(this.musicData.files[musicIndex - 1].loopable)) {
+        nextQueue.add(musicData.files[musicIndex - 1].pathURL);
+      }
+
       // music file
       nextQueue.add(music.pathURL);
-    } else if (percent >= 97) {
+    } else if (percent >= 95) {
       // stop name
       nextQueue.add(stopFile);
       // music file
-      nextQueue.add(music.pathURL);
+      nextQueue.add(this.musicData.files.last.pathURL);
 
       if (tripData.stops.length - 1 >= sequence + 1) {
         sequence += 1;
@@ -189,32 +197,14 @@ class SoundService {
         nextQueue.add("https://storage.googleapis.com/futar/EF-visz.mp3");
       }
     } else {
+      if (musicIndex > 0 && !(this.musicData.files[musicIndex - 1].loopable)) {
+        nextQueue.add(musicData.files[musicIndex - 1].pathURL);
+      }
+
       nextQueue.add(music.pathURL);
     }
 
-    // if (!music.loopable) {
-    //   // breakpoints.removeAt(index);
-    //   // musicData.files.removeAt(index);
-
-    //   // if (musicData.files.length == index + 1) {
-    //   //   // the next stop!
-    //   //   if (sequence + 1 >= tripData.stops.length) {
-    //   //     // no next stop - end of trip
-    //   //     // this.endTrip();
-    //   //   } else {
-    //   //     // next stop exists
-    //   //     this._fetchMusic();
-    //   //     this._reachBreakpoint(0, sequence + 1);
-    //   //     updateStop;
-    //   //   }
-    //   // } else {
-    //   //   // next file
-    //   final MusicFile nextMusic = musicData.files[index + 1];
-    //   final nextFile = "https://storage.googleapis.com/riddim/riddim/0/" +
-    //       nextMusic.fileName;
-    //   nextQueue.add(nextFile);
-    //   // }
-    // }
+    print(nextQueue);
   }
 
   void _listenSounds() {
@@ -292,7 +282,7 @@ class SoundService {
   Stream<int> waveformStream() async* {
     int i = 0;
     while (true) {
-      await Future.delayed(Duration(milliseconds: 180));
+      await Future.delayed(Duration(milliseconds: 120));
       if (_rawWaveformData != null) {
         i += 180;
 
@@ -309,7 +299,6 @@ class SoundService {
 
   void destroy() {
     _mainPlayer.stop();
-    _locationStream.cancel();
 
     this.tripId = null;
     this.tripData = null;
