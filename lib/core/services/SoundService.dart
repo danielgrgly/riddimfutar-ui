@@ -72,7 +72,7 @@ class SoundService {
     this.cacheMap = new Map<String, String>();
     this.updateStop = updateStop;
     this.endTrip = endTrip;
-    this.reachedIndex = 0;
+    this.reachedIndex = -1;
 
     final List<double> distances = this
         .tripData
@@ -195,7 +195,7 @@ class SoundService {
 
       if (tripData.stops.length - 1 >= sequence + 1) {
         sequence += 1;
-        reachedIndex = 0;
+        reachedIndex = -1;
         await _fetchMusic();
         _reachBreakpoint(0);
       } else {
