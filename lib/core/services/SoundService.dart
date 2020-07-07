@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:core';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
@@ -57,6 +56,7 @@ class SoundService {
   Function endTrip;
   Map<String, String> cacheMap;
   WaveformData _rawWaveformData;
+  int reachedIndex;
 
   SoundService(
     TripDetails trip,
@@ -72,6 +72,7 @@ class SoundService {
     this.cacheMap = new Map<String, String>();
     this.updateStop = updateStop;
     this.endTrip = endTrip;
+    this.reachedIndex = 0;
 
     final List<double> distances = this
         .tripData
@@ -131,7 +132,6 @@ class SoundService {
   }
 
   void _checkBreakpoint() async {
-    print("checkin location");
     final LocationData location = await _location.getLocation();
 
     // distance between two stops
@@ -153,7 +153,12 @@ class SoundService {
     // stop distance percentage
     int percent = ((nextDist / stopDist) * 100).toInt();
 
-    if (percent >= musicData.files[0].breakpoint) {
+    final int musicIndex = musicData.files.lastIndexWhere(
+      (element) => element.breakpoint <= percent,
+    );
+
+    if (musicIndex > reachedIndex) {
+      reachedIndex = musicIndex;
       _reachBreakpoint(percent);
     }
   }
@@ -190,6 +195,7 @@ class SoundService {
 
       if (tripData.stops.length - 1 >= sequence + 1) {
         sequence += 1;
+        reachedIndex = 0;
         await _fetchMusic();
         _reachBreakpoint(0);
       } else {
@@ -203,8 +209,6 @@ class SoundService {
 
       nextQueue.add(music.pathURL);
     }
-
-    print(nextQueue);
   }
 
   void _listenSounds() {
@@ -282,9 +286,9 @@ class SoundService {
   Stream<int> waveformStream() async* {
     int i = 0;
     while (true) {
-      await Future.delayed(Duration(milliseconds: 120));
+      await Future.delayed(Duration(milliseconds: 240));
       if (_rawWaveformData != null) {
-        i += 180;
+        i += 240;
 
         if (i >= _rawWaveformData.data.length) {
           i = 0;

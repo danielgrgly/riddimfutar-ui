@@ -60,15 +60,15 @@ class _VisualizerState extends State<Visualizer> with TickerProviderStateMixin {
                   alignment: Alignment.center,
                   children: <Widget>[
                     AnimatedContainer(
-                      duration: Duration(milliseconds: 120),
-                      curve: Curves.linear,
+                      duration: Duration(milliseconds: 240),
+                      curve: Curves.bounceInOut,
                       width: min(
                         _maxSize,
-                        _baseSize * max(snapshot.data / 1000, 0.25),
+                        _baseSize * max(snapshot.data / 500, 0.5),
                       ),
                       height: min(
                         _maxSize,
-                        _baseSize * max(snapshot.data / 1000, 0.25),
+                        _baseSize * max(snapshot.data / 500, 0.5),
                       ),
                       decoration: BoxDecoration(
                         color: widget.trip.color.withOpacity(0.2),
@@ -77,15 +77,15 @@ class _VisualizerState extends State<Visualizer> with TickerProviderStateMixin {
                       ),
                     ),
                     AnimatedContainer(
-                      duration: Duration(milliseconds: 120),
+                      duration: Duration(milliseconds: 240),
                       curve: Curves.linear,
                       width: min(
                         _maxSize,
-                        _baseSize * max(snapshot.data / 2000, 0.5),
+                        _baseSize * max(snapshot.data / 1000, 0.5),
                       ),
                       height: min(
                         _maxSize,
-                        _baseSize * max(snapshot.data / 2000, 0.5),
+                        _baseSize * max(snapshot.data / 1000, 0.5),
                       ),
                       decoration: BoxDecoration(
                         color: widget.trip.color.withOpacity(0.5),
@@ -94,15 +94,15 @@ class _VisualizerState extends State<Visualizer> with TickerProviderStateMixin {
                       ),
                     ),
                     AnimatedContainer(
-                      duration: Duration(milliseconds: 120),
+                      duration: Duration(milliseconds: 240),
                       curve: Curves.linear,
                       width: min(
                         _maxSize,
-                        _baseSize * max(snapshot.data / 4000, 0.75),
+                        _baseSize * max(snapshot.data / 1250, 0.75),
                       ),
                       height: min(
                         _maxSize,
-                        _baseSize * max(snapshot.data / 4000, 0.75),
+                        _baseSize * max(snapshot.data / 1250, 0.75),
                       ),
                       child: RotationTransition(
                         turns: Tween(begin: 0.0, end: 1.0).animate(_controller),
