@@ -60,7 +60,7 @@ class _VisualizerState extends State<Visualizer> with TickerProviderStateMixin {
                   alignment: Alignment.center,
                   children: <Widget>[
                     AnimatedContainer(
-                      duration: Duration(milliseconds: 240),
+                      duration: Duration(milliseconds: 10),
                       curve: Curves.bounceInOut,
                       width: min(
                         _maxSize,
@@ -77,7 +77,7 @@ class _VisualizerState extends State<Visualizer> with TickerProviderStateMixin {
                       ),
                     ),
                     AnimatedContainer(
-                      duration: Duration(milliseconds: 240),
+                      duration: Duration(milliseconds: 10),
                       curve: Curves.linear,
                       width: min(
                         _maxSize,
@@ -94,7 +94,7 @@ class _VisualizerState extends State<Visualizer> with TickerProviderStateMixin {
                       ),
                     ),
                     AnimatedContainer(
-                      duration: Duration(milliseconds: 240),
+                      duration: Duration(milliseconds: 10),
                       curve: Curves.linear,
                       width: min(
                         _maxSize,

@@ -286,9 +286,9 @@ class SoundService {
   Stream<int> waveformStream() async* {
     int i = 0;
     while (true) {
-      await Future.delayed(Duration(milliseconds: 240));
+      await Future.delayed(Duration(milliseconds: 10));
       if (_rawWaveformData != null) {
-        i += 240;
+        i += 10;
 
         if (i >= _rawWaveformData.data.length) {
           i = 0;
