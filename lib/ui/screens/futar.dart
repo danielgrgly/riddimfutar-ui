@@ -35,6 +35,7 @@ class Futar extends StatefulWidget {
 class FutarState extends State<Futar> {
   TripDetails trip;
   SoundService sound;
+  String artistName = "BKK";
 
   Future<dynamic> fetchDetails(String id) async {
     final response = await http.get(
@@ -55,12 +56,13 @@ class FutarState extends State<Futar> {
     setState(() {
       trip = TripDetails.fromJson(details);
       sound = new SoundService(
-        trip,
-        args.tripId,
-        args.location,
-        updateStop,
-        endTrip,
-      );
+          trip, args.tripId, args.location, updateStop, endTrip, setArtist);
+    });
+  }
+
+  void setArtist(String name) {
+    setState(() {
+      artistName = name;
     });
   }
 
@@ -105,7 +107,7 @@ class FutarState extends State<Futar> {
                   children: <Widget>[
                     FutarDisplay(trip: trip),
                     Spacer(),
-                    Artist(color: trip.color, name: "Lil Tango"),
+                    Artist(color: trip.color, name: artistName),
                     SizedBox(
                       height: 24,
                     ),
