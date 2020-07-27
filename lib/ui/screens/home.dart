@@ -18,6 +18,10 @@ final Widget logo = SvgPicture.asset(
 final Location _location = new Location();
 
 class Home extends StatelessWidget {
+  Home({this.vehicleListKey});
+
+  final GlobalKey<VehicleListState> vehicleListKey;
+
   Future<dynamic> fetchMeta() async {
     final response =
         await http.get('https://riddimfutar.ey.r.appspot.com/api/v1/metadata');
@@ -54,68 +58,74 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: ListView(
-        padding: EdgeInsets.symmetric(vertical: 34.0),
-        shrinkWrap: true,
-        children: <Widget>[
-          SizedBox(
-            height: 40,
-          ),
-          Center(
-            child: SafeArea(
-              bottom: false,
-              child: SizedBox(
-                child: logo,
-                height: 80,
-                width: 320,
-              ),
-            ),
-          ),
-          FutureBuilder(
-            future: fetchMeta(),
-            builder: (context, metadata) {
-              if (metadata.data != null) {
-                askPermission();
+      body: FutureBuilder(
+        future: fetchMeta(),
+        builder: (context, metadata) {
+          if (metadata.data != null) {
+            askPermission();
 
-                return StreamBuilder(
-                  stream: _location.onLocationChanged,
-                  builder: (context, location) {
-                    if (location.hasData) {
-                      if (metadata.data["lowerLeftLatitude"] <=
-                              location.data.latitude &&
-                          metadata.data["lowerLeftLongitude"] <=
-                              location.data.longitude &&
-                          metadata.data["upperRightLatitude"] >=
-                              location.data.latitude &&
-                          metadata.data["upperRightLongitude"] >=
-                              location.data.longitude) {
-                        return Column(
-                          children: <Widget>[
-                            metadata.data["message"] != null
-                                ? RollingText(
-                                    text: metadata.data["message"],
-                                  )
-                                : null,
-                            VehicleList(location: location.data)
-                          ],
-                        );
-                      } else {
-                        return Container(
-                          height: MediaQuery.of(context).size.height * 0.6,
-                          child: LocationOutOfBounds(),
-                        );
-                      }
-                    } else {
-                      return Loading();
+            return FutureBuilder<LocationData>(
+              future: _location.getLocation(),
+              builder: (context, location) {
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    if (!vehicleListKey.currentState.fetching) {
+                      vehicleListKey.currentState.fetchVehicles();
                     }
                   },
+                  child: ListView(
+                    padding: EdgeInsets.symmetric(vertical: 34.0),
+                    shrinkWrap: true,
+                    children: <Widget>[
+                      SizedBox(
+                        height: 40,
+                      ),
+                      Center(
+                        child: SafeArea(
+                          bottom: false,
+                          child: SizedBox(
+                            child: logo,
+                            height: 80,
+                            width: 320,
+                          ),
+                        ),
+                      ),
+                      location.hasData
+                          ? metadata.data["lowerLeftLatitude"] <=
+                                      location.data.latitude &&
+                                  metadata.data["lowerLeftLongitude"] <=
+                                      location.data.longitude &&
+                                  metadata.data["upperRightLatitude"] >=
+                                      location.data.latitude &&
+                                  metadata.data["upperRightLongitude"] >=
+                                      location.data.longitude
+                              ? Column(
+                                  children: <Widget>[
+                                    metadata.data["message"] != null
+                                        ? RollingText(
+                                            text: metadata.data["message"],
+                                          )
+                                        : null,
+                                    VehicleList(
+                                        key: vehicleListKey,
+                                        location: location.data),
+                                  ],
+                                )
+                              : Container(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.6,
+                                  child: LocationOutOfBounds(),
+                                )
+                          : Loading()
+                    ],
+                  ),
                 );
-              } else {
-                return Loading();
-              }
-            },
-          ),
-        ],
+              },
+            );
+          } else {
+            return Loading();
+          }
+        },
       ),
     );
   }

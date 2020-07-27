@@ -4,6 +4,7 @@ import 'package:flutter_statusbarcolor/flutter_statusbarcolor.dart';
 import './ui/screens/home.dart';
 import './ui/screens/futar.dart';
 import './ui/screens/about.dart';
+import "./ui/widgets/VehicleList.dart";
 
 import './core/constants.dart';
 
@@ -17,9 +18,10 @@ class Riddimfutar extends StatelessWidget {
     FlutterStatusbarcolor.setStatusBarWhiteForeground(true);
 
     final GlobalKey<FutarState> _futarKey = new GlobalKey<FutarState>();
+    final GlobalKey<VehicleListState> _vehicleListKey = new GlobalKey<VehicleListState>();
 
     return MaterialApp(
-      title: "Budipest",
+      title: "RIDDIMFUTÁR",
       theme: ThemeData(
         primarySwatch: black,
         textTheme: Theme.of(context)
@@ -28,7 +30,7 @@ class Riddimfutar extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => Home(),
+        '/': (context) => Home(vehicleListKey: _vehicleListKey),
         '/futar': (context) => Futar(key: _futarKey),
         '/about': (context) => About()
       },

@@ -9,26 +9,57 @@ import "./Loading.dart";
 import './NoVehiclesAround.dart';
 import './VehicleCard.dart';
 
-class VehicleList extends StatelessWidget {
-  VehicleList({this.location});
+class VehicleList extends StatefulWidget {
+  const VehicleList({
+    GlobalKey<VehicleListState> key,
+    this.location,
+  }) : super(key: key);
 
   final LocationData location;
+
+  @override
+  VehicleListState createState() => VehicleListState();
+}
+
+class VehicleListState extends State<VehicleList> {
+  List<Vehicle> vehicleList;
+  bool fetching = true;
+
+  @override
+  void initState() {
+    fetchVehicles();
+    super.initState();
+  }
 
   void selectVehicle(BuildContext context, Vehicle vehicle) {
     Navigator.pushNamed(
       context,
       "/futar",
-      arguments: FutarArguments(vehicle.tripId, location),
+      arguments: FutarArguments(vehicle.tripId, widget.location),
     );
   }
 
-  Future<dynamic> fetchVehicles(double lat, double lon) async {
+  Future<void> fetchVehicles() async {
+    setState(() {
+      fetching = true;
+    });
+
+    double lat = widget.location.latitude;
+    double lon = widget.location.longitude;
+
     final response = await http.get(
       'https://riddimfutar.ey.r.appspot.com/api/v1/vehicles?lat=$lat&lon=$lon',
     );
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      setState(() {
+        vehicleList = json
+            .decode(response.body)
+            .map<Vehicle>((i) => Vehicle.fromJson(i))
+            .toList();
+
+        fetching = false;
+      });
     } else {
       throw Exception('Failed to load vehicles');
     }
@@ -36,49 +67,38 @@ class VehicleList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: fetchVehicles(location.latitude, location.longitude),
-      // future: fetchVehicles(47.496652, 19.070190),
-      builder: (context, vehicles) {
-        if (vehicles.data != null) {
-          List<Vehicle> vehicleList =
-              vehicles.data.map<Vehicle>((i) => Vehicle.fromJson(i)).toList();
-
-          return vehicleList.length > 0
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 34.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        "Válassz járatot!",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 22),
+    return fetching
+        ? Loading()
+        : vehicleList.length > 0
+            ? Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 34.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      "Válassz járatot!",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                    ),
+                    Text(
+                      "A közeledben levő aktív BKK járműveket listázzuk.",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    SizedBox(
+                      height: 14,
+                    ),
+                    ...vehicleList.map(
+                      (Vehicle vehicle) => GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: () {
+                          selectVehicle(context, vehicle);
+                        },
+                        child: VehicleCard(vehicle),
                       ),
-                      Text(
-                        "A közeledben levő aktív BKK járműveket listázzuk.",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      SizedBox(
-                        height: 14,
-                      ),
-                      ...vehicleList.map(
-                        (Vehicle vehicle) => GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTap: () {
-                            selectVehicle(context, vehicle);
-                          },
-                          child: VehicleCard(vehicle),
-                        ),
-                      )
-                    ],
-                  ),
-                )
-              : NoVehiclesAround();
-        } else {
-          return Loading();
-        }
-      },
-    );
+                    ),
+                  ],
+                ),
+              )
+            : NoVehiclesAround();
   }
 }
