@@ -171,7 +171,6 @@ class SoundService {
     final int musicIndex = musicData.files.lastIndexWhere(
       (element) => element.breakpoint <= percent,
     );
-    final MusicFile music = musicData.files[musicIndex];
 
     final String stopFile = "https://storage.googleapis.com/futar/" +
         tripData.stops[sequence].fileName;
@@ -185,12 +184,7 @@ class SoundService {
         nextQueue.add("https://storage.googleapis.com/futar/EF-veg.mp3");
       }
 
-      if (musicIndex > 0 && !(this.musicData.files[musicIndex - 1].loopable)) {
-        nextQueue.add(musicData.files[musicIndex - 1].pathURL);
-      }
-
-      // music file
-      nextQueue.add(music.pathURL);
+      _addMusic(musicIndex);
     } else if (percent >= 95) {
       // stop name
       nextQueue.add(stopFile);
@@ -207,10 +201,22 @@ class SoundService {
         nextQueue.add("https://storage.googleapis.com/futar/EF-visz.mp3");
       }
     } else {
-      if (musicIndex > 0 && !(this.musicData.files[musicIndex - 1].loopable)) {
-        nextQueue.add(musicData.files[musicIndex - 1].pathURL);
-      }
+      _addMusic(musicIndex);
+    }
+  }
 
+  void _addMusic(int musicIndex) {
+    final MusicFile music = musicData.files[musicIndex];
+
+    if (musicIndex > 0) {
+      final MusicFile previousMusic = musicData.files[musicIndex - 1];
+      if (!previousMusic.loopable &&
+          !nextQueue.contains(previousMusic.pathURL)) {
+        nextQueue.add(previousMusic.pathURL);
+      }
+    }
+
+    if (!nextQueue.contains(music.pathURL)) {
       nextQueue.add(music.pathURL);
     }
   }
@@ -236,8 +242,9 @@ class SoundService {
   }
 
   Future<dynamic> _fetchMusic() async {
+    final String genre = tripData.stops[sequence].musicOverride ?? "riddim";
     final response = await http.get(
-      'https://riddimfutar.ey.r.appspot.com/api/v1/music/riddim',
+      'https://riddimfutar.ey.r.appspot.com/api/v1/music/$genre',
     );
 
     if (response.statusCode == 200) {
@@ -280,7 +287,7 @@ class SoundService {
 
       // _rawWaveformData = null;
     } else {
-      delay = 75;
+      delay = 25;
 
       // final MusicFile music = musicData.files[musicData.files.lastIndexWhere(
       //   (element) => element.pathURL == url,

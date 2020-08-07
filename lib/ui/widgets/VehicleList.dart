@@ -9,13 +9,12 @@ import "./Loading.dart";
 import './NoVehiclesAround.dart';
 import './VehicleCard.dart';
 
+final Location _location = Location();
+
 class VehicleList extends StatefulWidget {
   const VehicleList({
     GlobalKey<VehicleListState> key,
-    this.location,
   }) : super(key: key);
-
-  final LocationData location;
 
   @override
   VehicleListState createState() => VehicleListState();
@@ -23,6 +22,7 @@ class VehicleList extends StatefulWidget {
 
 class VehicleListState extends State<VehicleList> {
   List<Vehicle> vehicleList;
+  LocationData location;
   bool fetching = true;
 
   @override
@@ -35,7 +35,7 @@ class VehicleListState extends State<VehicleList> {
     Navigator.pushNamed(
       context,
       "/futar",
-      arguments: FutarArguments(vehicle.tripId, widget.location),
+      arguments: FutarArguments(vehicle.tripId, location),
     );
   }
 
@@ -44,8 +44,14 @@ class VehicleListState extends State<VehicleList> {
       fetching = true;
     });
 
-    double lat = widget.location.latitude;
-    double lon = widget.location.longitude;
+    final LocationData locationResult = await _location.getLocation();
+
+    setState(() {
+      location = locationResult;
+    });
+
+    double lat = location.latitude;
+    double lon = location.longitude;
 
     final response = await http.get(
       'https://riddimfutar.ey.r.appspot.com/api/v1/vehicles?lat=$lat&lon=$lon',

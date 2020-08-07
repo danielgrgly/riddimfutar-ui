@@ -15,7 +15,6 @@ class FutarDisplay extends StatelessWidget {
       children: <Widget>[
         Container(
           width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).systemGestureInsets.top + 188,
           color: Color.fromRGBO(70, 71, 112, 1),
           child: Padding(
             padding: EdgeInsets.only(

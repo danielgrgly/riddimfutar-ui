@@ -107,8 +107,8 @@ class Home extends StatelessWidget {
                                           )
                                         : null,
                                     VehicleList(
-                                        key: vehicleListKey,
-                                        location: location.data),
+                                      key: vehicleListKey,
+                                    ),
                                   ],
                                 )
                               : Container(

@@ -56,7 +56,13 @@ class FutarState extends State<Futar> {
     setState(() {
       trip = TripDetails.fromJson(details);
       sound = new SoundService(
-          trip, args.tripId, args.location, updateStop, endTrip, setArtist);
+        trip,
+        args.tripId,
+        args.location,
+        updateStop,
+        endTrip,
+        setArtist,
+      );
     });
   }
 

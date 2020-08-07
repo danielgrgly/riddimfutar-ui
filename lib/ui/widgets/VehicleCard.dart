@@ -38,7 +38,7 @@ class VehicleCard extends StatelessWidget {
               width: 8,
             ),
             Container(
-              width: MediaQuery.of(context).size.width * 0.6,
+              width: (MediaQuery.of(context).size.width * 0.85) - 104,
               child: Text(
                 "${vehicle.shortName} ▶ ${vehicle.tripHeadsign}",
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),

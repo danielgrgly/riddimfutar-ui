@@ -7,6 +7,7 @@ class StopDetails {
   double lat;
   double lon;
   int predictedArrivalTime;
+  String musicOverride;
 
   StopDetails({
     this.fileName,
@@ -14,6 +15,7 @@ class StopDetails {
     this.lat,
     this.lon,
     this.predictedArrivalTime,
+    this.musicOverride,
   });
 
   factory StopDetails.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class StopDetails {
       lon: json['lon'],
       name: json['name'],
       predictedArrivalTime: json['predictedArrivalTime'],
+      musicOverride: json['musicOverride'],
     );
   }
 }

@@ -50,71 +50,83 @@ class _VisualizerState extends State<Visualizer> with TickerProviderStateMixin {
     double _maxSize = MediaQuery.of(context).size.width;
     double _baseSize = _maxSize / 3;
 
-    return OverflowBox(
-      child: StreamBuilder<int>(
-          stream: widget.futarKey.currentState.sound.waveformStream(),
-          builder: (context, snapshot) {
-            return Padding(
-                padding: const EdgeInsets.only(top: 60.0),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: <Widget>[
-                    AnimatedContainer(
-                      duration: Duration(milliseconds: 10),
-                      curve: Curves.bounceInOut,
-                      width: min(
-                        _maxSize,
-                        _baseSize * max(snapshot.data / 500, 0.5),
-                      ),
-                      height: min(
-                        _maxSize,
-                        _baseSize * max(snapshot.data / 500, 0.5),
-                      ),
-                      decoration: BoxDecoration(
-                        color: widget.trip.color.withOpacity(0.2),
-                        borderRadius:
-                            BorderRadius.all(Radius.circular(10000000)),
-                      ),
-                    ),
-                    AnimatedContainer(
-                      duration: Duration(milliseconds: 10),
-                      curve: Curves.linear,
-                      width: min(
-                        _maxSize,
-                        _baseSize * max(snapshot.data / 1000, 0.5),
-                      ),
-                      height: min(
-                        _maxSize,
-                        _baseSize * max(snapshot.data / 1000, 0.5),
-                      ),
-                      decoration: BoxDecoration(
-                        color: widget.trip.color.withOpacity(0.5),
-                        borderRadius:
-                            BorderRadius.all(Radius.circular(10000000)),
-                      ),
-                    ),
-                    AnimatedContainer(
-                      duration: Duration(milliseconds: 10),
-                      curve: Curves.linear,
-                      width: min(
-                        _maxSize,
-                        _baseSize * max(snapshot.data / 1250, 0.75),
-                      ),
-                      height: min(
-                        _maxSize,
-                        _baseSize * max(snapshot.data / 1250, 0.75),
-                      ),
-                      child: RotationTransition(
-                        turns: Tween(begin: 0.0, end: 1.0).animate(_controller),
-                        child: SvgPicture.asset(
-                          iconPath(widget.trip.type),
-                          semanticsLabel: 'visualizer',
-                        ),
-                      ),
-                    ),
-                  ],
-                ));
-          }),
+    // return OverflowBox(
+    //   child: StreamBuilder<int>(
+    //     stream: widget.futarKey.currentState.sound.waveformStream(),
+    //     builder: (context, snapshot) {
+    //       return Padding(
+    //         padding: const EdgeInsets.only(top: 60.0),
+    //         child: Stack(
+    //           alignment: Alignment.center,
+    //           children: <Widget>[
+    //             AnimatedContainer(
+    //               duration: Duration(milliseconds: 10),
+    //               curve: Curves.bounceInOut,
+    //               width: min(
+    //                 _maxSize,
+    //                 _baseSize * max(snapshot.data / 500, 0.5),
+    //               ),
+    //               height: min(
+    //                 _maxSize,
+    //                 _baseSize * max(snapshot.data / 500, 0.5),
+    //               ),
+    //               decoration: BoxDecoration(
+    //                 color: widget.trip.color.withOpacity(0.2),
+    //                 borderRadius: BorderRadius.all(Radius.circular(10000000)),
+    //               ),
+    //             ),
+    //             AnimatedContainer(
+    //               duration: Duration(milliseconds: 10),
+    //               curve: Curves.linear,
+    //               width: min(
+    //                 _maxSize,
+    //                 _baseSize * max(snapshot.data / 1000, 0.5),
+    //               ),
+    //               height: min(
+    //                 _maxSize,
+    //                 _baseSize * max(snapshot.data / 1000, 0.5),
+    //               ),
+    //               decoration: BoxDecoration(
+    //                 color: widget.trip.color.withOpacity(0.5),
+    //                 borderRadius: BorderRadius.all(Radius.circular(10000000)),
+    //               ),
+    //             ),
+    //             AnimatedContainer(
+    //               duration: Duration(milliseconds: 10),
+    //               curve: Curves.linear,
+    //               width: min(
+    //                 _maxSize,
+    //                 _baseSize * max(snapshot.data / 1250, 0.75),
+    //               ),
+    //               height: min(
+    //                 _maxSize,
+    //                 _baseSize * max(snapshot.data / 1250, 0.75),
+    //               ),
+    //               child: RotationTransition(
+    //                 turns: Tween(begin: 0.0, end: 1.0).animate(_controller),
+    //                 child: SvgPicture.asset(
+    //                   iconPath(widget.trip.type),
+    //                   semanticsLabel: 'visualizer',
+    //                 ),
+    //               ),
+    //             ),
+    //           ],
+    //         ),
+    //       );
+    //     },
+    //   ),
+    // );
+
+    return Container(
+      width: _maxSize * 0.4,
+      height: _maxSize * 0.4,
+      child: RotationTransition(
+        turns: Tween(begin: 0.0, end: 1.0).animate(_controller),
+        child: SvgPicture.asset(
+          iconPath(widget.trip.type),
+          semanticsLabel: 'visualizer',
+        ),
+      ),
     );
   }
 }
