@@ -32,7 +32,8 @@ class SoundService {
   Function setArtist;
   // WaveformData _rawWaveformData;
   int percent;
-  int reachedIndex;
+  int reachedMusicIndex;
+  int reachedStopIndex;
 
   SoundService(
     TripDetails trip,
@@ -46,7 +47,8 @@ class SoundService {
     this.updateStop = updateStop;
     this.endTrip = endTrip;
     this.setArtist = setArtist;
-    this.reachedIndex = -1;
+    this.reachedMusicIndex = -1;
+    this.reachedStopIndex = -1;
     this.percent = 0;
 
     this._init();
@@ -153,7 +155,9 @@ class SoundService {
       }
 
       _addMusic(musicIndex);
-    } else if (sequencePercent >= 95) {
+    } else if (sequencePercent >= 95 && reachedStopIndex < stopSequence) {
+      reachedStopIndex = stopSequence;
+
       // stop name
       _addToSource(stopFile);
       // music file
@@ -177,7 +181,7 @@ class SoundService {
     print("_addMusic: $musicIndex");
     final MusicFile music = musicData.files[musicIndex];
 
-    if (musicIndex > 0 && reachedIndex < musicIndex) {
+    if (musicIndex > 0 && reachedMusicIndex < musicIndex) {
       final MusicFile previousMusic = musicData.files[musicIndex - 1];
       if (!previousMusic.loopable &&
           !_checkIfSourceContains(previousMusic.pathURL)) {
@@ -186,7 +190,7 @@ class SoundService {
     }
 
     if (!_checkIfSourceContains(music.pathURL)) {
-      reachedIndex = musicIndex;
+      reachedMusicIndex = musicIndex;
       _addToSource(music.pathURL);
     }
   }
@@ -219,7 +223,7 @@ class SoundService {
     );
 
     if (response.statusCode == 200) {
-      reachedIndex = -1;
+      reachedMusicIndex = -1;
       musicData = MusicDetails.fromJson(json.decode(response.body));
     } else {
       throw Exception('Failed to fetch music');
@@ -297,6 +301,7 @@ class SoundService {
     this.updateStop = null;
     this.endTrip = null;
     this.setArtist = null;
-    this.reachedIndex = -1;
+    this.reachedMusicIndex = -1;
+    this.reachedStopIndex = -1;
   }
 }
