@@ -69,8 +69,10 @@ class Home extends StatelessWidget {
               builder: (context, location) {
                 return RefreshIndicator(
                   onRefresh: () async {
-                    if (!vehicleListKey.currentState.fetching) {
-                      vehicleListKey.currentState.fetchVehicles();
+                    if (vehicleListKey.currentState != null) {
+                      if (!vehicleListKey.currentState.fetching) {
+                        vehicleListKey.currentState.fetchVehicles();
+                      }
                     }
                   },
                   child: ListView(
@@ -116,14 +118,14 @@ class Home extends StatelessWidget {
                                       MediaQuery.of(context).size.height * 0.6,
                                   child: LocationOutOfBounds(),
                                 )
-                          : Loading()
+                          : Loading("load location")
                     ],
                   ),
                 );
               },
             );
           } else {
-            return Loading();
+            return Loading("load metadata");
           }
         },
       ),

@@ -11,9 +11,9 @@ import "../models/MusicDetails.dart";
 import "../models/TripDetails.dart";
 // import "../models/WaveformData.dart";
 
-final _mainPlayer = AudioPlayer();
+AudioPlayer _mainPlayer = AudioPlayer();
 
-ConcatenatingAudioSource audioSource = ConcatenatingAudioSource(
+ConcatenatingAudioSource _audioSource = ConcatenatingAudioSource(
   children: [
     AudioSource.uri(
       Uri.parse("https://storage.googleapis.com/futar/EF-udv.mp3"),
@@ -21,7 +21,7 @@ ConcatenatingAudioSource audioSource = ConcatenatingAudioSource(
   ],
 );
 
-final Location _location = Location();
+Location _location = Location();
 
 class SoundService {
   TripDetails tripData;
@@ -31,6 +31,7 @@ class SoundService {
   Function endTrip;
   Function setArtist;
   // WaveformData _rawWaveformData;
+  int percent;
   int reachedIndex;
 
   SoundService(
@@ -40,61 +41,43 @@ class SoundService {
     Function endTrip,
     Function setArtist,
   ) {
-    tripData = trip;
-    stopSequence = 0;
-    updateStop = updateStop;
-    endTrip = endTrip;
-    setArtist = setArtist;
-    reachedIndex = -1;
+    this.tripData = trip;
+    this.stopSequence = 0;
+    this.updateStop = updateStop;
+    this.endTrip = endTrip;
+    this.setArtist = setArtist;
+    this.reachedIndex = -1;
+    this.percent = 0;
 
-    AudioPlayer.setIosCategory(IosCategory.playback);
-
-    final List<double> distances = tripData.stops
-        .map(
-          (stop) => calculateDistance(
-            stop.lat,
-            stop.lon,
-            userLocation.latitude,
-            userLocation.longitude,
-          ),
-        )
-        .toList();
-
-    double smallestValue = distances[0];
-    int smallestIndex = 0;
-
-    for (int i = 0; i < distances.length; i++) {
-      if (distances[i] < smallestValue) {
-        smallestValue = distances[i];
-        smallestIndex = i;
-      }
-    }
-
-    stopSequence = smallestIndex + 1;
-
-    _init();
+    this._init();
   }
 
   void _init() async {
-    await _mainPlayer.load(audioSource);
+    AudioPlayer.setIosCategory(IosCategory.playback);
 
-    await _fetchMusic();
-    updateStop(stopSequence);
-    setArtist(musicData.artist);
-    _reachBreakpoint(0);
-    _listenSounds();
-
-    _mainPlayer.play();
+    _location.onLocationChanged.listen((event) {
+      _updateLocation(event);
+    });
 
     _mainPlayer.positionStream.listen((event) {
-      if (event.inMilliseconds >= _mainPlayer.duration.inMilliseconds - 10) {
-        _listenSounds();
+      if (event.inMilliseconds - 500 ==
+          _mainPlayer.duration.inMilliseconds - 500) {
+        _sequence(percent);
+        _loop();
       }
     });
+
+    await _mainPlayer.load(_audioSource);
+    await _fetchMusic();
+
+    _sequence(0);
+
+    _mainPlayer.play();
   }
 
-  void _checkBreakpoint() async {
-    final LocationData location = await _location.getLocation();
+  void _updateLocation(LocationData location) async {
+    print("_updateLocation =============================");
+    print("stopSequence: $stopSequence; percent: $percent");
 
     // distance between two stops
     double stopDist = calculateDistance(
@@ -113,29 +96,21 @@ class SoundService {
     );
 
     // stop distance percentage
-    int percent = ((nextDist / stopDist) * 100).toInt();
+    this.percent = ((nextDist / stopDist) * 100).toInt();
 
-    final int musicIndex = musicData.files.lastIndexWhere(
-      (element) => element.breakpoint <= percent,
-    );
-
-    if (musicIndex > reachedIndex) {
-      reachedIndex = musicIndex;
-      _reachBreakpoint(percent);
-    } else {
-      _listenSounds();
-    }
+    print("stopSequence: $stopSequence; percent: $percent");
+    print("==============================================");
   }
 
-  void _reachBreakpoint(int percent) async {
+  void _sequence(int sequencePercent) async {
     final int musicIndex = musicData.files.lastIndexWhere(
-      (element) => element.breakpoint <= percent,
+      (element) => element.breakpoint <= sequencePercent,
     );
 
     final String stopFile = "https://storage.googleapis.com/futar/" +
         tripData.stops[stopSequence].fileName;
 
-    if (percent == 0) {
+    if (sequencePercent == 0) {
       _addToSource("https://storage.googleapis.com/futar/EF-kov.mp3");
 
       // stop name
@@ -146,7 +121,7 @@ class SoundService {
       }
 
       _addMusic(musicIndex);
-    } else if (percent >= 95) {
+    } else if (sequencePercent >= 95) {
       // stop name
       _addToSource(stopFile);
       // music file
@@ -154,9 +129,9 @@ class SoundService {
 
       if (tripData.stops.length - 1 >= stopSequence + 1) {
         print("yea i should come");
-        stopSequence += 1;
+        this.stopSequence += 1;
         await _fetchMusic();
-        _reachBreakpoint(0);
+        _sequence(0);
       } else {
         _addToSource("https://storage.googleapis.com/futar/EF-veg.mp3");
         _addToSource("https://storage.googleapis.com/futar/EF-visz.mp3");
@@ -167,9 +142,10 @@ class SoundService {
   }
 
   void _addMusic(int musicIndex) {
+    print("_addMusic: $musicIndex");
     final MusicFile music = musicData.files[musicIndex];
 
-    if (musicIndex > 0) {
+    if (musicIndex > 0 && reachedIndex < musicIndex) {
       final MusicFile previousMusic = musicData.files[musicIndex - 1];
       if (!previousMusic.loopable &&
           !_checkIfSourceContains(previousMusic.pathURL)) {
@@ -178,15 +154,12 @@ class SoundService {
     }
 
     if (!_checkIfSourceContains(music.pathURL)) {
+      reachedIndex = musicIndex;
       _addToSource(music.pathURL);
     }
   }
 
-  void _listenSounds() {
-    if (_mainPlayer.currentIndex == audioSource.children.length - 1) {
-      _addToSource(_getCurrentUri());
-    }
-
+  void _loop() {
     if (_getCurrentUri() == "https://storage.googleapis.com/futar/EF-kov.mp3") {
       updateStop(stopSequence);
       setArtist(musicData.artist);
@@ -194,13 +167,18 @@ class SoundService {
 
     if (_getCurrentUri() ==
         "https://storage.googleapis.com/futar/EF-visz.mp3") {
-      audioSource.children.removeRange(0, audioSource.children.length - 1);
+      _audioSource.children.removeRange(0, _audioSource.children.length - 1);
 
       endTrip();
+    }
+
+    if (_mainPlayer.currentIndex == _audioSource.children.length - 1) {
+      _addToSource(_getCurrentUri());
     }
   }
 
   Future<dynamic> _fetchMusic() async {
+    print("_fetchMusic");
     final String genre = tripData.stops[stopSequence].musicOverride ?? "riddim";
     final response = await http.get(
       'https://riddimfutar.ey.r.appspot.com/api/v1/music/$genre',
@@ -215,7 +193,8 @@ class SoundService {
   }
 
   void _addToSource(String uri) {
-    audioSource.add(
+    print("_addToSource: $uri");
+    _audioSource.add(
       AudioSource.uri(
         Uri.parse(uri),
       ),
@@ -223,7 +202,8 @@ class SoundService {
   }
 
   bool _checkIfSourceContains(String uri) {
-    return audioSource.children.contains(
+    print("_checkIfSourceContains: $uri");
+    return _audioSource.children.contains(
       AudioSource.uri(
         Uri.parse(uri),
       ),
@@ -231,7 +211,8 @@ class SoundService {
   }
 
   String _getCurrentUri() {
-    return (audioSource.children[_mainPlayer.currentIndex] as UriAudioSource)
+    print("_getCurrentUri");
+    return (_audioSource.children[_mainPlayer.currentIndex] as UriAudioSource)
         .uri
         .toString();
   }
@@ -254,12 +235,28 @@ class SoundService {
   //   }
   // }
 
-  void destroy() {
+  void dispose() {
     _mainPlayer.stop();
+    _mainPlayer.dispose();
 
-    tripData = null;
-    stopSequence = 0;
-    updateStop = null;
-    endTrip = null;
+    _mainPlayer = AudioPlayer();
+
+    _audioSource = ConcatenatingAudioSource(
+      children: [
+        AudioSource.uri(
+          Uri.parse("https://storage.googleapis.com/futar/EF-udv.mp3"),
+        ),
+      ],
+    );
+
+    _location = Location();
+
+    this.tripData = null;
+    this.musicData = null;
+    this.stopSequence = 0;
+    this.updateStop = null;
+    this.endTrip = null;
+    this.setArtist = null;
+    this.reachedIndex = -1;
   }
 }

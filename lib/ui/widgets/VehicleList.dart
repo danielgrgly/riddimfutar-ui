@@ -74,7 +74,7 @@ class VehicleListState extends State<VehicleList> {
   @override
   Widget build(BuildContext context) {
     return fetching
-        ? Loading()
+        ? Loading("fetch vehiclelist")
         : vehicleList.length > 0
             ? Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 34.0),

@@ -78,7 +78,7 @@ class FutarState extends State<Futar> {
   }
 
   void endTrip() {
-    sound.destroy();
+    sound.dispose();
     sound = null;
     Navigator.of(context).pop();
     super.dispose();
@@ -86,7 +86,7 @@ class FutarState extends State<Futar> {
 
   @override
   void dispose() {
-    sound.destroy();
+    sound.dispose();
     sound = null;
     super.dispose();
   }
@@ -139,7 +139,7 @@ class FutarState extends State<Futar> {
                 ),
               ],
             )
-          : Loading(),
+          : Loading("load trip"),
     );
   }
 }
