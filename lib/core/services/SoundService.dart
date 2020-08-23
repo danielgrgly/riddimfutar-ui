@@ -55,6 +55,12 @@ class SoundService {
   void _init() async {
     AudioPlayer.setIosCategory(IosCategory.playback);
 
+    await _mainPlayer.load(_audioSource);
+    await _updateSequence();
+    await _fetchMusic();
+
+    _sequence(0);
+
     _location.onLocationChanged.listen((event) {
       _updateLocation(event);
     });
@@ -67,12 +73,38 @@ class SoundService {
       }
     });
 
-    await _mainPlayer.load(_audioSource);
-    await _fetchMusic();
-
-    _sequence(0);
-
     _mainPlayer.play();
+  }
+
+  Future<void> _updateSequence() async {
+    LocationData location = await _location.getLocation();
+
+    final List<double> distances = this
+        .tripData
+        .stops
+        .map(
+          (stop) => calculateDistance(
+            stop.lat,
+            stop.lon,
+            location.latitude,
+            location.longitude,
+          ),
+        )
+        .toList();
+
+    double smallestValue = distances[0];
+    int smallestIndex = 0;
+
+    for (int i = 0; i < distances.length; i++) {
+      if (distances[i] < smallestValue) {
+        smallestValue = distances[i];
+        smallestIndex = i;
+      }
+    }
+
+    this.stopSequence = smallestIndex + 1;
+
+    updateStop(this.stopSequence);
   }
 
   void _updateLocation(LocationData location) async {
@@ -129,7 +161,7 @@ class SoundService {
 
       if (tripData.stops.length - 1 >= stopSequence + 1) {
         print("yea i should come");
-        this.stopSequence += 1;
+        await _updateSequence();
         await _fetchMusic();
         _sequence(0);
       } else {
@@ -160,6 +192,7 @@ class SoundService {
   }
 
   void _loop() {
+    print("_loop");
     if (_getCurrentUri() == "https://storage.googleapis.com/futar/EF-kov.mp3") {
       updateStop(stopSequence);
       setArtist(musicData.artist);
@@ -173,6 +206,7 @@ class SoundService {
     }
 
     if (_mainPlayer.currentIndex == _audioSource.children.length - 1) {
+      print("running out of tunes, re-add current");
       _addToSource(_getCurrentUri());
     }
   }
@@ -194,6 +228,11 @@ class SoundService {
 
   void _addToSource(String uri) {
     print("_addToSource: $uri");
+    print("PRINT OUT EVERYTHING IN AUDIOSOURCE:");
+    _audioSource.children.forEach((element) {
+      print((element as UriAudioSource).uri);
+    });
+    print("====================================");
     _audioSource.add(
       AudioSource.uri(
         Uri.parse(uri),
@@ -203,11 +242,12 @@ class SoundService {
 
   bool _checkIfSourceContains(String uri) {
     print("_checkIfSourceContains: $uri");
-    return _audioSource.children.contains(
-      AudioSource.uri(
-        Uri.parse(uri),
-      ),
-    );
+
+    List<String> uris = _audioSource.children
+        .map((item) => (item as UriAudioSource).uri.toString())
+        .toList();
+
+    return uris.contains(uri);
   }
 
   String _getCurrentUri() {
