@@ -17,7 +17,6 @@ dependencies:
   http: any
   flutter_statusbarcolor: any
   just_audio: 0.3.4
-  flutter_cache_manager: any
   marquee: any
 
 dev_dependencies:

@@ -2,19 +2,17 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:core';
 
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
 import 'package:riddimfutar/core/models/WaveformData.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 
 import "../../core/utils.dart";
 import "../../core/models/MusicDetails.dart";
 import "../../core/models/TripDetails.dart";
 
 final _mainPlayer = AudioPlayer();
+
 ConcatenatingAudioSource audioSource = ConcatenatingAudioSource(
   children: [
     AudioSource.uri(
@@ -22,33 +20,8 @@ ConcatenatingAudioSource audioSource = ConcatenatingAudioSource(
     ),
   ],
 );
+
 final Location _location = Location();
-
-class SoundCacheManager extends BaseCacheManager {
-  static const key = "soundCache";
-
-  static SoundCacheManager _instance;
-
-  factory SoundCacheManager() {
-    if (_instance == null) {
-      _instance = new SoundCacheManager._();
-    }
-    return _instance;
-  }
-
-  SoundCacheManager._()
-      : super(
-          key,
-          maxAgeCacheObject: Duration(days: 30),
-          maxNrOfCacheObjects: 80,
-        );
-
-  @override
-  Future<String> getFilePath() async {
-    var directory = await getTemporaryDirectory();
-    return path.join(directory.path, key);
-  }
-}
 
 class SoundService {
   TripDetails tripData;
@@ -58,7 +31,6 @@ class SoundService {
   Function updateStop;
   Function endTrip;
   Function setArtist;
-  Map<String, String> cacheMap;
   WaveformData _rawWaveformData;
   int reachedIndex;
 
@@ -73,7 +45,6 @@ class SoundService {
     this.tripId = tripId;
     this.tripData = trip;
     this.sequence = 0;
-    this.cacheMap = new Map<String, String>();
     this.updateStop = updateStop;
     this.endTrip = endTrip;
     this.setArtist = setArtist;
@@ -150,6 +121,8 @@ class SoundService {
     if (musicIndex > reachedIndex) {
       reachedIndex = musicIndex;
       _reachBreakpoint(percent);
+    } else {
+      _addToSource(_getCurrentUri());
     }
   }
 
@@ -209,9 +182,6 @@ class SoundService {
   }
 
   void _listenSounds() {
-    print("listensounds...");
-    print(audioSource.children);
-
     if (_getCurrentUri() == "https://storage.googleapis.com/futar/EF-kov.mp3") {
       updateStop(sequence);
       setArtist(musicData.artist);
@@ -234,17 +204,9 @@ class SoundService {
     if (response.statusCode == 200) {
       reachedIndex = -1;
       this.musicData = MusicDetails.fromJson(json.decode(response.body));
-      this.musicData.files.forEach((element) async {
-        _cacheFile(element.pathURL);
-      });
     } else {
       throw Exception('Failed to fetch music');
     }
-  }
-
-  void _cacheFile(String url) async {
-    final file = await SoundCacheManager().downloadFile(url);
-    cacheMap[url] = file.file.path;
   }
 
   void _addToSource(String uri) {
@@ -293,7 +255,6 @@ class SoundService {
     this.tripId = null;
     this.tripData = null;
     this.sequence = 0;
-    this.cacheMap = new Map<String, String>();
     this.updateStop = null;
     this.endTrip = null;
   }
