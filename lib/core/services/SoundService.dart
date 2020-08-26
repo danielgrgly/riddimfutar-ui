@@ -67,12 +67,9 @@ class SoundService {
       _updateLocation(event);
     });
 
-    _mainPlayer.positionStream.listen((event) {
-      if (event.inMilliseconds - 500 ==
-          _mainPlayer.duration.inMilliseconds - 500) {
-        _sequence(percent);
-        _loop();
-      }
+    _mainPlayer.sequenceStateStream.listen((event) {
+      _sequence(percent);
+      _loop();
     });
 
     _mainPlayer.play();
@@ -110,9 +107,6 @@ class SoundService {
   }
 
   void _updateLocation(LocationData location) async {
-    print("_updateLocation =============================");
-    print("stopSequence: $stopSequence; percent: $percent");
-
     // distance between two stops
     double stopDist = calculateDistance(
       tripData.stops[stopSequence - 1].lat,
@@ -131,9 +125,6 @@ class SoundService {
 
     // stop distance percentage
     this.percent = ((nextDist / stopDist) * 100).toInt();
-
-    print("stopSequence: $stopSequence; percent: $percent");
-    print("==============================================");
   }
 
   void _sequence(int sequencePercent) async {
@@ -145,6 +136,8 @@ class SoundService {
         tripData.stops[stopSequence].fileName;
 
     if (sequencePercent == 0) {
+      _emptySource();
+
       _addToSource("https://storage.googleapis.com/futar/EF-kov.mp3");
 
       // stop name
@@ -164,7 +157,6 @@ class SoundService {
       _addToSource(musicData.files.last.pathURL);
 
       if (tripData.stops.length - 1 >= stopSequence + 1) {
-        print("yea i should come");
         await _updateSequence();
         await _fetchMusic();
         _sequence(0);
@@ -178,7 +170,6 @@ class SoundService {
   }
 
   void _addMusic(int musicIndex) {
-    print("_addMusic: $musicIndex");
     final MusicFile music = musicData.files[musicIndex];
 
     if (musicIndex > 0 && reachedMusicIndex < musicIndex) {
@@ -189,14 +180,14 @@ class SoundService {
       }
     }
 
-    if (!_checkIfSourceContains(music.pathURL)) {
+    if (!_checkIfSourceContains(music.pathURL) ||
+        _mainPlayer.currentIndex == _audioSource.children.length - 1) {
       reachedMusicIndex = musicIndex;
       _addToSource(music.pathURL);
     }
   }
 
   void _loop() {
-    print("_loop");
     if (_getCurrentUri() == "https://storage.googleapis.com/futar/EF-kov.mp3") {
       updateStop(stopSequence);
       setArtist(musicData.artist);
@@ -204,19 +195,13 @@ class SoundService {
 
     if (_getCurrentUri() ==
         "https://storage.googleapis.com/futar/EF-visz.mp3") {
-      _audioSource.children.removeRange(0, _audioSource.children.length - 1);
+      _emptySource();
 
       endTrip();
-    }
-
-    if (_mainPlayer.currentIndex == _audioSource.children.length - 1) {
-      print("running out of tunes, re-add current");
-      _addToSource(_getCurrentUri());
     }
   }
 
   Future<dynamic> _fetchMusic() async {
-    print("_fetchMusic");
     final String genre = tripData.stops[stopSequence].musicOverride ?? "riddim";
     final response = await http.get(
       'https://riddimfutar.ey.r.appspot.com/api/v1/music/$genre',
@@ -231,12 +216,6 @@ class SoundService {
   }
 
   void _addToSource(String uri) {
-    print("_addToSource: $uri");
-    print("PRINT OUT EVERYTHING IN AUDIOSOURCE:");
-    _audioSource.children.forEach((element) {
-      print((element as UriAudioSource).uri);
-    });
-    print("====================================");
     _audioSource.add(
       AudioSource.uri(
         Uri.parse(uri),
@@ -244,9 +223,11 @@ class SoundService {
     );
   }
 
-  bool _checkIfSourceContains(String uri) {
-    print("_checkIfSourceContains: $uri");
+  void _emptySource() {
+    _audioSource.children.removeRange(0, _audioSource.children.length - 1);
+  }
 
+  bool _checkIfSourceContains(String uri) {
     List<String> uris = _audioSource.children
         .map((item) => (item as UriAudioSource).uri.toString())
         .toList();
@@ -255,7 +236,6 @@ class SoundService {
   }
 
   String _getCurrentUri() {
-    print("_getCurrentUri");
     return (_audioSource.children[_mainPlayer.currentIndex] as UriAudioSource)
         .uri
         .toString();
