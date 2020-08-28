@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
 
 import "../../core/models/TripDetails.dart";
-import "../../core/services/SoundService.dart";
+import '../../core/services/CoreService.dart';
 import "../widgets/Loading.dart";
 import "../widgets/FutarDisplay.dart";
 import "../widgets/Visualizer.dart";
@@ -34,7 +34,7 @@ class Futar extends StatefulWidget {
 
 class FutarState extends State<Futar> {
   TripDetails trip;
-  SoundService sound;
+  CoreService core;
   String artistName = "BKK";
 
   Future<dynamic> fetchDetails(String id) async {
@@ -55,7 +55,7 @@ class FutarState extends State<Futar> {
 
     setState(() {
       trip = TripDetails.fromJson(details);
-      sound = new SoundService(
+      core = new CoreService(
         trip,
         args.location,
         updateStop,
@@ -78,18 +78,18 @@ class FutarState extends State<Futar> {
   }
 
   void endTrip() {
-    sound.dispose(true);
+    core.dispose(true);
     trip = null;
-    sound = null;
+    core = null;
     Navigator.of(context).pop();
     super.dispose();
   }
 
   @override
   void dispose() {
-    sound.dispose(false);
+    core.dispose(false);
     trip = null;
-    sound = null;
+    core = null;
     super.dispose();
   }
 

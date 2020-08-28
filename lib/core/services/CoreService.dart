@@ -6,9 +6,9 @@ import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
 
-import "../utils.dart";
-import "../models/MusicDetails.dart";
-import "../models/TripDetails.dart";
+import '../utils.dart';
+import '../models/MusicDetails.dart';
+import '../models/TripDetails.dart';
 // import "../models/WaveformData.dart";
 
 AudioPlayer _mainPlayer = AudioPlayer();
@@ -23,7 +23,7 @@ ConcatenatingAudioSource _audioSource = ConcatenatingAudioSource(
 
 Location _location = Location();
 
-class SoundService {
+class CoreService {
   TripDetails tripData;
   MusicDetails musicData;
   int stopSequence;
@@ -37,7 +37,7 @@ class SoundService {
   int reachedStopIndex;
   List<String> _allUris;
 
-  SoundService(
+  CoreService(
     TripDetails trip,
     LocationData userLocation,
     Function updateStop,
@@ -181,7 +181,7 @@ class SoundService {
         _addToSource("https://storage.googleapis.com/futar/EF-veg.mp3");
         _addToSource("https://storage.googleapis.com/futar/EF-visz.mp3");
       }
-    } else if (announcedStopIndex != reachedStopIndex) {
+    } else if (announcedStopIndex != reachedStopIndex && !_mainPlayer.hasNext) {
       print("seq/2");
       _addMusic(musicIndex);
     } else {
@@ -264,7 +264,11 @@ class SoundService {
   }
 
   String _getCurrentUri() {
-    return _allUris[_mainPlayer.currentIndex];
+    print("_getCurrentUri");
+    print(_allUris.length);
+    print(_mainPlayer.currentIndex);
+    print(_allUris[_mainPlayer.currentIndex - 1]);
+    return _allUris[_mainPlayer.currentIndex - 1];
   }
 
   // Stream<int> waveformStream() async* {
@@ -286,11 +290,12 @@ class SoundService {
   // }
 
   void dispose(bool isGraceful) {
-    if (isGraceful && _mainPlayer.playing) {
+    if (isGraceful &&
+        _mainPlayer.processingState != ProcessingState.completed) {
       Future.delayed(Duration(milliseconds: 250)).then((value) {
         dispose(true);
-        return;
       });
+      return;
     }
 
     _mainPlayer.stop();
