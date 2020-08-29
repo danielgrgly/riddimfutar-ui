@@ -9,7 +9,7 @@ import 'package:just_audio/just_audio.dart';
 import '../utils.dart';
 import '../models/MusicDetails.dart';
 import '../models/TripDetails.dart';
-// import "../models/WaveformData.dart";
+import "../models/WaveformData.dart";
 
 AudioPlayer _mainPlayer = AudioPlayer();
 
@@ -65,7 +65,6 @@ class CoreService {
     await _updateSequence();
     await _fetchMusic();
 
-    print("sequence 1 ===============");
     _sequence(0);
 
     _location.onLocationChanged.listen((event) {
@@ -81,7 +80,6 @@ class CoreService {
   }
 
   Future<void> _updateSequence() async {
-    print("_updateSequence");
     LocationData location = await _location.getLocation();
 
     final List<double> distances = this
@@ -113,7 +111,6 @@ class CoreService {
   }
 
   void _updateLocation(LocationData location) async {
-    print("_updateLocation");
     // distance between two stops
     double stopDist = calculateDistance(
       tripData.stops[stopSequence - 1].lat,
@@ -135,7 +132,6 @@ class CoreService {
   }
 
   void _sequence(int sequencePercent) async {
-    print("_sequence: $sequencePercent");
     final int musicIndex = musicData.files.lastIndexWhere(
       (element) => element.breakpoint <= sequencePercent,
     );
@@ -148,7 +144,6 @@ class CoreService {
 
       _emptySource();
 
-      print("seq/0");
       _addToSource("https://storage.googleapis.com/futar/EF-kov.mp3");
 
       // stop name
@@ -162,44 +157,31 @@ class CoreService {
     } else if (sequencePercent >= 95 && reachedStopIndex < stopSequence) {
       reachedStopIndex = stopSequence;
 
-      print("seq/1");
       // stop name
       _addToSource(stopFile);
       // music file
       _addToSource(musicData.files.last.pathURL);
 
       if (tripData.stops.length - 1 >= stopSequence + 1) {
-        print("Yea boiiiiiiiiiii");
         await _updateSequence();
-        print("seq updated");
         await _fetchMusic();
-        print("music fetched");
         _sequence(0);
-        print("new seq added");
       } else {
-        print("Yea boi");
         _addToSource("https://storage.googleapis.com/futar/EF-veg.mp3");
         _addToSource("https://storage.googleapis.com/futar/EF-visz.mp3");
       }
     } else if (announcedStopIndex != reachedStopIndex && !_mainPlayer.hasNext) {
-      print("seq/2");
       _addMusic(musicIndex);
-    } else {
-      print("seq/3");
-      print(
-          "announcedStopIndex: $announcedStopIndex && reachedStopIndex: $reachedStopIndex");
     }
   }
 
   void _addMusic(int musicIndex) {
-    print("_addMusic: $musicIndex");
     final MusicFile music = musicData.files[musicIndex];
 
     if (musicIndex > 0 && reachedMusicIndex < musicIndex) {
       final MusicFile previousMusic = musicData.files[musicIndex - 1];
       if (!previousMusic.loopable &&
           !_checkIfSourceContains(previousMusic.pathURL)) {
-        print("mus/0");
         _addToSource(previousMusic.pathURL);
       }
     }
@@ -207,25 +189,32 @@ class CoreService {
     if (!_checkIfSourceContains(music.pathURL) ||
         _mainPlayer.currentIndex == _audioSource.children.length - 1) {
       reachedMusicIndex = musicIndex;
-      print("mus/1");
       _addToSource(music.pathURL);
     }
   }
 
   void _loop() {
-    print("_loop");
     String currentlyPlaying = _getCurrentUri();
-    if (currentlyPlaying == "https://storage.googleapis.com/futar/EF-kov.mp3") {
-      updateStop(stopSequence);
-      setArtist(musicData.artist);
-    } else if (currentlyPlaying ==
-        "https://storage.googleapis.com/futar/EF-visz.mp3") {
-      dispose(true);
+
+    if (currentlyPlaying.startsWith("https://storage.googleapis.com/futar/")) {
+      if (currentlyPlaying ==
+          "https://storage.googleapis.com/futar/EF-kov.mp3") {
+        updateStop(stopSequence);
+        setArtist(musicData.artist);
+      } else if (currentlyPlaying ==
+          "https://storage.googleapis.com/futar/EF-visz.mp3") {
+        dispose(true);
+      }
+    } else {
+      // final MusicFile music = musicData.files[musicData.files.lastIndexWhere(
+      //   (element) => element.pathURL == currentlyPlaying,
+      // )];
+
+      // _rawWaveformData = music.waveform;
     }
   }
 
   Future<dynamic> _fetchMusic() async {
-    print("_fetchMusic");
     final String genre = tripData.stops[stopSequence].musicOverride ?? "riddim";
     final response = await http.get(
       'https://riddimfutar.ey.r.appspot.com/api/v1/music/$genre',
@@ -240,7 +229,6 @@ class CoreService {
   }
 
   void _addToSource(String uri) {
-    print("_addToSource: $uri");
     _allUris.add(uri);
     _audioSource.add(
       AudioSource.uri(
@@ -250,12 +238,10 @@ class CoreService {
   }
 
   void _emptySource() {
-    print("_emptySource");
     _audioSource.children.removeRange(0, _audioSource.children.length - 1);
   }
 
   bool _checkIfSourceContains(String uri) {
-    print("_checkIfSourceContains: $uri");
     List<String> uris = _audioSource.children
         .map((item) => (item as UriAudioSource).uri.toString())
         .toList();
@@ -264,19 +250,16 @@ class CoreService {
   }
 
   String _getCurrentUri() {
-    print("_getCurrentUri");
-    print(_allUris.length);
-    print(_mainPlayer.currentIndex);
-    print(_allUris[_mainPlayer.currentIndex - 1]);
     return _allUris[_mainPlayer.currentIndex - 1];
   }
 
   // Stream<int> waveformStream() async* {
   //   int i = 0;
+
   //   while (true) {
-  //     await Future.delayed(Duration(milliseconds: 10));
+  //     await Future.delayed(Duration(milliseconds: 1));
   //     if (_rawWaveformData != null) {
-  //       i += 10;
+  //       i += 1;
 
   //       if (i >= _rawWaveformData.data.length) {
   //         i = 0;

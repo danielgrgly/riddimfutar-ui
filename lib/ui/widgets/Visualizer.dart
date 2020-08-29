@@ -52,6 +52,7 @@ class _VisualizerState extends State<Visualizer> with TickerProviderStateMixin {
 
     // return OverflowBox(
     //   child: StreamBuilder<int>(
+    //     initialData: 0,
     //     stream: widget.futarKey.currentState.sound.waveformStream(),
     //     builder: (context, snapshot) {
     //       return Padding(
